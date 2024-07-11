@@ -451,7 +451,7 @@ mod test {
         let bb = BoundingBox::from_center_size(Vec3::ZERO, Vec3::splat(SIZE));
         let bb_transformed = bb.rotated_around_origin(&rotation);
 
-        let expected_size_xy: f32 = (2.0 * SIZE * SIZE).sqrt();
+        let expected_size_xy = (2.0 * SIZE * SIZE).sqrt();
         assert!(Vec3::distance(bb_transformed.center(), Vec3::ZERO) < EPSILON);
         assert!(
             Vec3::distance(
@@ -472,7 +472,7 @@ mod test {
         let bb = BoundingBox::from_center_size(Vec3::ZERO, Vec3::splat(SIZE));
         let bb_transformed = bb.transform_iso(&transform);
 
-        let expected_size_xy: f32 = (2.0 * SIZE * SIZE).sqrt();
+        let expected_size_xy = (2.0 * SIZE * SIZE).sqrt();
         assert!(Vec3::distance(bb_transformed.center(), translation) < EPSILON);
         assert!(
             Vec3::distance(
@@ -495,7 +495,7 @@ mod test {
         let bb = BoundingBox::from_center_size(Vec3::ZERO, Vec3::splat(SIZE));
         let bb_transformed = bb.transform_affine3(&transform);
 
-        let expected_size_xy: f32 = (2.0 * SIZE * SIZE * SCALE * SCALE).sqrt();
+        let expected_size_xy = (2.0 * SIZE * SIZE * SCALE * SCALE).sqrt();
         assert!(Vec3::distance(bb_transformed.center(), translation) < EPSILON);
         assert!(
             Vec3::distance(
@@ -517,7 +517,7 @@ mod test {
         let bb = BoundingBox::from_center_size(Vec3::ZERO, Vec3::splat(SIZE));
         let bb_transformed = bb.transform_conformal3(&transform);
 
-        let expected_size_xy: f32 = (2.0 * SIZE * SIZE * SCALE * SCALE).sqrt();
+        let expected_size_xy = (2.0 * SIZE * SIZE * SCALE * SCALE).sqrt();
         assert!(Vec3::distance(bb_transformed.center(), translation) < EPSILON);
         assert!(
             Vec3::distance(
