@@ -313,7 +313,6 @@ impl From<IsoTransform> for Conformal3 {
     }
 }
 
-#[cfg(feature = "std")]
 impl core::fmt::Debug for Conformal3 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let (axis, angle) = self.rotation().to_axis_angle();

@@ -23,15 +23,14 @@ targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
 
 
 [features]
-default = ["std"]
+default = []
 bytemuck = ["dep:bytemuck", "glam/bytemuck"]
 libm = ["glam/libm"]
 serde = ["dep:serde", "glam/serde"]
-std = ["glam/std"]
 
 
 [dependencies]
-glam = { version = "0.25", default-features = false }
+glam = { version = "0.25", default-features = false, features = ["std"] }
 bytemuck = { version = "1.9", optional = true }
 serde = { version = "1", default-features = false, optional = true, features = [
     "derive",

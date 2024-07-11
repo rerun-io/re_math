@@ -275,7 +275,6 @@ impl From<IsoTransform> for Mat4 {
     }
 }
 
-#[cfg(feature = "std")]
 impl core::fmt::Debug for IsoTransform {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let (axis, angle) = self.rotation.to_axis_angle();
@@ -392,7 +391,6 @@ mod test {
     }
 
     fn test_single_transform(t: IsoTransform) {
-        #[cfg(feature = "std")]
         eprintln!("-------------------------------------------\nTesting {t:?}",);
 
         assert_approx_eq_transform!(t, IsoTransform::from_mat4(&t.to_mat4()).unwrap());
@@ -426,7 +424,6 @@ mod test {
     }
 
     fn test_transform_mul(a: IsoTransform, b: IsoTransform) {
-        #[cfg(feature = "std")]
         eprintln!("-------------------------------------------\nTesting {a:?} x {b:?}",);
 
         assert_approx_eq_transform!(
