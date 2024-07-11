@@ -30,7 +30,7 @@ serde = ["dep:serde", "glam/serde"]
 
 
 [dependencies]
-glam = { version = "0.25", default-features = false, features = ["std"] }
+glam = { version = "0.28", default-features = false, features = ["std"] }
 bytemuck = { version = "1.9", optional = true }
 serde = { version = "1", default-features = false, optional = true, features = [
     "derive",
