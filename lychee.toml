@@ -79,4 +79,7 @@ exclude = [
 
   # Used in rerun_template repo until the user search-replaces `re_math`
   'https://github.com/rerun-io/re_math',
+
+  'https://blog.rust-lang.org',               # 404 in old macaw CHANGELOG.md
+  'https://github.com/EmbarkStudios/wim-app', # 404 in old macaw CHANGELOG.md
 ]
