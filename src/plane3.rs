@@ -10,7 +10,6 @@ use crate::Vec3;
 ///
 /// A point `point` is on the plane when `plane.normal.dot(point) + plane.d = 0`.
 #[derive(Copy, Clone, PartialEq)]
-#[cfg_attr(not(target_arch = "spirv"), derive(Debug))]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Plane3 {
     /// Normal vector

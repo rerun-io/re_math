@@ -1,18 +1,15 @@
 //! A friendly opinionated game math library built on top the excellent lower-level [`glam`](https://github.com/bitshifter/glam-rs).
 
-#![cfg_attr(target_arch = "spirv", feature(repr_simd, core_intrinsics))]
-#![cfg_attr(target_arch = "spirv", no_std)]
-
 mod bounding_box;
-#[cfg(not(target_arch = "spirv"))]
+
 mod color_rgba8;
 mod conformal;
 mod float_ext;
 mod iso_transform;
-#[cfg(not(target_arch = "spirv"))]
+
 mod mesh_gen;
 mod plane3;
-#[cfg(not(target_arch = "spirv"))]
+
 mod quat_ext;
 mod ray3;
 mod utils;
@@ -31,11 +28,10 @@ pub use self::vec2_ext::*;
 pub use self::vec3_ext::*;
 pub use self::vec4_ext::*;
 
-#[cfg(not(target_arch = "spirv"))]
 pub use color_rgba8::*;
-#[cfg(not(target_arch = "spirv"))]
+
 pub use mesh_gen::*;
-#[cfg(not(target_arch = "spirv"))]
+
 pub use quat_ext::*;
 
 /// Prelude module with extension traits
@@ -48,7 +44,6 @@ pub mod prelude {
     pub use crate::Vec4Ext;
     pub use crate::Vec4Swizzles;
 
-    #[cfg(not(target_arch = "spirv"))]
     pub use crate::QuatExt;
 }
 

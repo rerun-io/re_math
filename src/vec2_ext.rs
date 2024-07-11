@@ -2,9 +2,6 @@ use super::prelude::*;
 use super::vec2;
 use super::Vec2;
 
-#[cfg(target_arch = "spirv")]
-use num_traits::Float;
-
 /// Extensions to [`Vec2`]
 ///
 /// Adds additional functionality to [`Vec2`] that [`glam`] doesn't have.

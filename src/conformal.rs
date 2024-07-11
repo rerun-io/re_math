@@ -228,7 +228,6 @@ impl Conformal3 {
     /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
     ///
     /// Will return [`None`] if any argument is zero, non-finite, or if forward and up are colinear.
-    #[cfg(not(target_arch = "spirv"))] // TODO: large Options in rust-gpu
     #[inline]
     pub fn look_at_rh(eye: Vec3, target: Vec3, up: Vec3) -> Option<Self> {
         IsoTransform::look_at_rh(eye, target, up).map(Self::from_iso_transform)

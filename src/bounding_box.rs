@@ -11,7 +11,6 @@ pub struct BoundingBox {
     pub max: Vec3,
 }
 
-#[cfg(not(target_arch = "spirv"))]
 impl core::fmt::Debug for BoundingBox {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{:?} - {:?}", self.min, self.max)
@@ -135,7 +134,6 @@ impl BoundingBox {
         self.min.is_nan() || self.max.is_nan()
     }
 
-    #[cfg(not(target_arch = "spirv"))]
     /// The eight corners of this bounding box.
     pub fn corners(&self) -> [Vec3; 8] {
         [
@@ -153,7 +151,6 @@ impl BoundingBox {
     /// The minimum radius of a sphere, centered at the origin, fully containing the box.
     ///
     /// Requires a well-formed box for the result to be valid.
-    #[cfg(not(target_arch = "spirv"))]
     pub fn bounding_sphere_radius(&self) -> f32 {
         let mut max_dist_square = 0.0f32;
         for corner in self.corners() {
@@ -165,7 +162,6 @@ impl BoundingBox {
     /// The minimum radius of a sphere, centered at the bounding box, fully containing the box.
     ///
     /// Requires a well-formed box for the result to be valid.
-    #[cfg(not(target_arch = "spirv"))]
     pub fn centered_bounding_sphere_radius(&self) -> f32 {
         let mut max_dist_square = 0.0f32;
         let center = self.center();
@@ -259,7 +255,6 @@ impl BoundingBox {
     /// Note that the rotated bounding box is very likely larger than the original,
     /// since it must be large enough to contain the now rotated box.
     #[must_use]
-    #[cfg(not(target_arch = "spirv"))]
     pub fn rotated_around_origin(&self, q: &crate::Quat) -> Self {
         if self.is_nothing() {
             Self::nothing()
@@ -273,7 +268,6 @@ impl BoundingBox {
     /// Note that the rotated bounding box is very likely larger than the original,
     /// since it must be large enough to contain the now rotated box.
     #[must_use]
-    #[cfg(not(target_arch = "spirv"))]
     pub fn transform_iso(&self, m: &crate::IsoTransform) -> Self {
         if self.is_nothing() {
             Self::nothing()
@@ -287,7 +281,6 @@ impl BoundingBox {
     /// Note that the rotated bounding box is very likely larger than the original,
     /// since it must be large enough to contain the now rotated box.
     #[must_use]
-    #[cfg(not(target_arch = "spirv"))]
     pub fn transform_affine3(&self, m: &crate::Affine3A) -> Self {
         if self.is_nothing() {
             Self::nothing()
@@ -301,7 +294,6 @@ impl BoundingBox {
     /// Note that the rotated bounding box is very likely larger than the original,
     /// since it must be large enough to contain the now rotated box.
     #[must_use]
-    #[cfg(not(target_arch = "spirv"))]
     pub fn transform_conformal3(&self, m: &crate::Conformal3) -> Self {
         if self.is_nothing() {
             Self::nothing()
@@ -361,7 +353,6 @@ impl ToScaledMat3A for crate::Conformal3 {
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 fn transform_bounding_box<T: TransformPoint3 + ToScaledMat3A>(
     half_size: Vec3,
     center: Vec3,
@@ -388,7 +379,6 @@ fn transform_bounding_box<T: TransformPoint3 + ToScaledMat3A>(
     }
 }
 
-#[cfg(not(target_arch = "spirv"))]
 fn rotate_bounding_box(half_size: Vec3, center: Vec3, q: crate::Quat) -> BoundingBox {
     // Inspired by:
     // https://zeux.io/2010/10/17/aabb-from-obb-with-component-wise-abs

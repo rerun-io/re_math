@@ -4,9 +4,6 @@ use super::vec4;
 use super::UVec4;
 use super::Vec4;
 
-#[cfg(target_arch = "spirv")]
-use num_traits::Float;
-
 /// Extensions to [`Vec4`]
 ///
 /// Adds additional functionality to [`Vec4`] that [`glam`] doesn't have.
