@@ -1,21 +1,21 @@
 [package]
-edition = "2021"
-name = "re_math"
-version = "0.19.1"
 authors = [
     "Embark <opensource@embark-studios.com>",
     "rerun.io <opensource@rerun.io>",
 ]
-publish = true
+categories = ["game-engines"]
 description = "An opinionated game math library built on top the excellent glam"
-readme = "README.md"
-keywords = ["gamedev", "math"]
+edition = "2021"
 homepage = "https://github.com/rerun-io/re_math"
 include = ["LICENSE-APACHE", "LICENSE-MIT", "**/*.rs", "Cargo.toml"]
-categories = ["game-engines"]
+keywords = ["gamedev", "math"]
 license = "MIT OR Apache-2.0"
+name = "re_math"
+publish = true
+readme = "README.md"
 repository = "https://github.com/rerun-io/re_math"
 rust-version = "1.76"
+version = "0.20.0"
 
 [package.metadata.docs.rs]
 all-features = true

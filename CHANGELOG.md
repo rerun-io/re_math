@@ -1,13 +1,21 @@
-# `macaw` changelog
-
-<!-- markdownlint-disable MD024 -->
+# `re_math` changelog
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.20.0 - 2024-07-11
+First release of `re_math` since forking off from `macaw`.
+
+* Update to `glam` 0.28
+* Rename `BoundingBox::nothing()` to `BoundingBox::NOTHING`
+* Rename `BoundingBox::everything()` to `BoundingBox::EVERYTHING`
+* Remove `ColorRgba8`
+* Rename feature `with_serde` to `serde`
+* Remove support for spirv compilation target
+
+---
+
+# Changelog of Macaw up until the fork
 
 ## [0.19.1] - 2023-02-26
 

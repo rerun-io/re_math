@@ -1,6 +1,6 @@
 //! An opinionated 3D math library built on [`glam`](https://github.com/bitshifter/glam-rs).
 //!
-//! `re_math` was originally based on [macaw](https://crates.io/crates/macaw).
+//! `re_math` is a fork of [`macaw`](https://crates.io/crates/macaw) by [Embark Studios](https://www.embark-studios.com/).
 
 mod bounding_box;
 mod conformal;
