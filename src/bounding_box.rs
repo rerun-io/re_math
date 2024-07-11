@@ -403,10 +403,10 @@ fn rotate_bounding_box(half_size: Vec3, center: Vec3, q: Quat) -> BoundingBox {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::Affine3A;
     use crate::Conformal3;
     use crate::IsoTransform;
-    use crate::Quat;
+    use glam::Affine3A;
+    use glam::Quat;
     use std::f32::consts::FRAC_PI_2;
 
     #[test]
