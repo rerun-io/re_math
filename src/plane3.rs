@@ -1,4 +1,4 @@
-use crate::Vec3;
+use glam::{Vec3, Vec4};
 
 /// A 3-dimensional plane primitive.
 ///
@@ -14,6 +14,7 @@ use crate::Vec3;
 pub struct Plane3 {
     /// Normal vector
     pub normal: Vec3,
+
     /// Distance
     pub d: f32,
 }
@@ -24,11 +25,13 @@ impl Plane3 {
         normal: Vec3::Z,
         d: 0.0,
     };
+
     /// The Y^Z plane with normal = +X
     pub const YZ: Self = Self {
         normal: Vec3::X,
         d: 0.0,
     };
+
     /// The Z^X plane with normal = +Y
     pub const ZX: Self = Self {
         normal: Vec3::Y,
@@ -38,7 +41,7 @@ impl Plane3 {
     /// From the plane normal and a distance `d` so that for all points on the plane:
     /// `normal.dot(point) + d = 0`.
     #[inline]
-    pub fn from_normal_dist(normal: Vec3, d: f32) -> Self {
+    pub const fn from_normal_dist(normal: Vec3, d: f32) -> Self {
         Self { normal, d }
     }
 
@@ -97,7 +100,7 @@ impl Plane3 {
 
     /// The distance to a point `[x, y, z, 1]` is the dot product of the point and this.
     #[inline]
-    pub fn as_vec4(&self) -> crate::Vec4 {
+    pub fn as_vec4(&self) -> Vec4 {
         self.normal.extend(self.d)
     }
 }

@@ -1,15 +1,9 @@
-use glam::Affine3A;
-use glam::Mat4;
-use glam::Vec3A;
+use glam::{Affine3A, Mat4, Quat, Vec3, Vec3A, Vec4, Vec4Swizzles};
 
-use crate::IsoTransform;
-use crate::Quat;
-use crate::Vec3;
-use crate::Vec3Ext;
-use crate::Vec4;
-use crate::Vec4Swizzles;
+use crate::{IsoTransform, Vec3Ext};
 
 /// Represents a transform with translation + rotation + uniform scale.
+///
 /// Preserves local angles.
 /// Scale and rotation will be applied first, then translation.
 #[derive(Clone, Copy, PartialEq)]
@@ -17,6 +11,7 @@ use crate::Vec4Swizzles;
 pub struct Conformal3 {
     /// xyz = translation, w = uniform scale
     pub translation_and_scale: Vec4,
+
     pub rotation: Quat,
 }
 
@@ -103,7 +98,7 @@ impl Conformal3 {
     /// Will attempt to create a `Conformal3` from an `Affine3A`. Assumes no shearing and uniform scaling.
     /// If the affine transform contains shearing or non-uniform scaling it will be lost.
     #[inline]
-    pub fn from_affine3a_lossy(transform: &crate::Affine3A) -> Self {
+    pub fn from_affine3a_lossy(transform: &Affine3A) -> Self {
         let (scale, rotation, translation) = transform.to_scale_rotation_translation();
         Self {
             translation_and_scale: translation.extend(scale.mean()),
@@ -215,7 +210,6 @@ impl Conformal3 {
     }
 
     /// Truncates a `Conformal3` to an `IsoTransform` (rotation, translation).
-
     pub fn to_iso_transform(self) -> IsoTransform {
         IsoTransform::from_rotation_translation(self.rotation, self.translation())
     }
@@ -305,7 +299,7 @@ impl From<Conformal3> for Mat4 {
     }
 }
 
-impl From<Conformal3> for crate::Affine3A {
+impl From<Conformal3> for Affine3A {
     #[inline]
     fn from(c: Conformal3) -> Self {
         c.to_affine3a()
@@ -340,7 +334,7 @@ impl core::fmt::Debug for Conformal3 {
                     axis[2],
                 ),
             )
-            .field("scale", &format!("{}", scale))
+            .field("scale", &scale)
             .finish()
     }
 }
@@ -364,6 +358,8 @@ mod test {
 
     #[test]
     fn test_inverse() {
+        #![allow(clippy::disallowed_methods)] // normalize
+
         use crate::Conformal3;
 
         let transform = Conformal3::from_scale_rotation_translation(

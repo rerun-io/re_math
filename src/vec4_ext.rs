@@ -1,8 +1,6 @@
+use glam::{uvec4, vec4, UVec4, Vec4};
+
 use super::prelude::*;
-use super::uvec4;
-use super::vec4;
-use super::UVec4;
-use super::Vec4;
 
 /// Extensions to [`Vec4`]
 ///
@@ -20,7 +18,7 @@ pub trait Vec4Ext {
 
     /// Selects between `true` and `false` based on the result of `value[i] < self[i]`
     #[must_use]
-    fn step_select(self, value: Self, tru: Self, fals: Self) -> Self;
+    fn step_select(self, value: Self, true_: Self, false_: Self) -> Self;
 
     /// Return only the fractional parts of each component.
     #[must_use]

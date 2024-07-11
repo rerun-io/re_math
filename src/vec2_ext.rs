@@ -1,6 +1,6 @@
 use super::prelude::*;
-use super::vec2;
-use super::Vec2;
+
+use glam::{vec2, Vec2};
 
 /// Extensions to [`Vec2`]
 ///
@@ -26,7 +26,7 @@ pub trait Vec2Ext {
 
     /// Selects between `true` and `false` based on the result of `value[i] < self[i]`
     #[must_use]
-    fn step_select(self, value: Self, tru: Self, fals: Self) -> Self;
+    fn step_select(self, value: Self, true_: Self, false_: Self) -> Self;
 
     /// Return only the fractional parts of each component.
     #[must_use]

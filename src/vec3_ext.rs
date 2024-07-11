@@ -1,6 +1,6 @@
+use glam::{vec3, Vec3};
+
 use super::prelude::*;
-use super::vec3;
-use super::Vec3;
 
 /// Extensions to [`Vec3`]
 ///
@@ -18,7 +18,7 @@ pub trait Vec3Ext {
 
     /// Selects between `true` and `false` based on the result of `value[i] < self[i]`
     #[must_use]
-    fn step_select(self, value: Self, tru: Self, fals: Self) -> Self;
+    fn step_select(self, value: Self, true_: Self, false_: Self) -> Self;
 
     /// Return only the fractional parts of each component.
     #[must_use]
@@ -105,7 +105,7 @@ impl Vec3Ext for Vec3 {
 
 /// Coordinate system extension to [`Vec3`]
 ///
-/// This crate is opinionated  with what coordinate system it uses and this adds
+/// This crate is opinionated with what coordinate system it uses and this adds
 /// additional functions to access the coordinate system axis
 ///
 /// The exact coordinate system we use is right-handed with +X = right, +Y = up, -Z = forward, +Z = back

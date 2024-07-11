@@ -1,6 +1,8 @@
-use crate::IsoTransform;
-use crate::Vec3;
 use std::ops::Range;
+
+use glam::Vec3;
+
+use crate::IsoTransform;
 
 /// Raw mesh generator. Only generates positions, normals and an index buffer.
 ///
@@ -36,6 +38,8 @@ impl MeshGen {
     }
 
     pub fn push_cube(&mut self, half_size: Vec3, transform: IsoTransform) -> Range<usize> {
+        #![allow(clippy::disallowed_methods)] // Use of normalize fine as long as the input is not degenerate.
+
         let s = half_size;
 
         let index_offset = self.positions.len() as u32;
@@ -156,7 +160,7 @@ impl MeshGen {
         for y in 1..subdivision_y {
             let angle_y = delta_y * y as f32;
             let y_offset = if y >= middle { length_y } else { 0.0 };
-            // TODO: The middle stripe on capsules should really be a whole extra ring.
+            // TODO(emilk): The middle stripe on capsules should really be a whole extra ring.
             // Still looks "good enough" with enough tessellation, but should be fixed.
             // let midstripe = y == middle || y == middle + 1;
             for x in 0..subdivision_x {

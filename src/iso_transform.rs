@@ -1,8 +1,4 @@
-use glam::Affine3A;
-use glam::Mat4;
-use glam::Quat;
-use glam::Vec3;
-use glam::Vec3A;
+use glam::{Affine3A, Mat4, Quat, Vec3, Vec3A};
 
 /// An isometric transform represented by translation * rotation.
 ///
@@ -265,7 +261,7 @@ impl core::ops::Mul<IsoTransform> for Mat4 {
     }
 }
 
-impl From<IsoTransform> for crate::Affine3A {
+impl From<IsoTransform> for Affine3A {
     #[inline]
     fn from(iso: IsoTransform) -> Self {
         Self::from_rotation_translation(iso.rotation(), iso.translation())
@@ -354,6 +350,8 @@ mod test {
 
     #[test]
     fn transform() {
+        #![allow(clippy::disallowed_methods)] // normalize
+
         let t = [
             IsoTransform {
                 translation: Vec3A::new(0.0, 0.0, 0.0),
