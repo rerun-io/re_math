@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 
-## Unreleased - 0.33.0
+## 0.33.0 - 2026-09-30
 `re_math` is no longer deprecated: it replaces `macaw` in Rerun, since `macaw` does not keep up with `glam` and Rerun needs features it lacks.
 
 `re_math` is now based on `macaw` 0.30.0 instead of 0.19.1, and the version continues `macaw`'s numbering.
