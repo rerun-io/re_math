@@ -1,6 +1,11 @@
-use glam::{vec3, Vec3};
-
+use super::Vec3;
 use super::prelude::*;
+use super::vec3;
+
+use glam::Vec3A;
+use glam::vec3a;
+#[cfg(target_arch = "spirv")]
+use num_traits::Float;
 
 /// Extensions to [`Vec3`]
 ///
@@ -18,7 +23,7 @@ pub trait Vec3Ext {
 
     /// Selects between `true` and `false` based on the result of `value[i] < self[i]`
     #[must_use]
-    fn step_select(self, value: Self, true_: Self, false_: Self) -> Self;
+    fn step_select(self, value: Self, tru: Self, fals: Self) -> Self;
 
     /// Return only the fractional parts of each component.
     #[must_use]
@@ -47,6 +52,14 @@ pub trait Vec3Ext {
     /// Returns true if all components of the vector is the same within an absolute difference of `max_abs_diff`
     #[must_use]
     fn has_equal_components(self, max_abs_diff: f32) -> bool;
+
+    /// Performs a an exponential interpolation between `self` and `other` using `a` to weight between them.
+    /// The return value is computed as `self.powf(1−a) * other.powf(a)`.
+    ///
+    /// This means that the interpolation is linear in the log domain, so it is useful when interpolating
+    /// values that will be multiplied, such as scaling factors.
+    #[must_use]
+    fn eerp(self, other: Self, a: f32) -> Self;
 }
 
 impl Vec3Ext for Vec3 {
@@ -56,6 +69,7 @@ impl Vec3Ext for Vec3 {
         vec3(self.x.trunc(), self.y.trunc(), self.z.trunc())
     }
 
+    #[inline]
     fn step(self, value: Self) -> Self {
         vec3(
             self.x.step(value.x),
@@ -64,6 +78,7 @@ impl Vec3Ext for Vec3 {
         )
     }
 
+    #[inline]
     fn step_select(self, value: Self, less: Self, greater_or_equal: Self) -> Self {
         vec3(
             self.x.step_select(value.x, less.x, greater_or_equal.x),
@@ -72,40 +87,128 @@ impl Vec3Ext for Vec3 {
         )
     }
 
+    #[inline]
     fn fract(self) -> Self {
         vec3(self.x.fract(), self.y.fract(), self.z.fract())
     }
 
+    #[inline]
     fn saturate(self) -> Self {
         vec3(self.x.saturate(), self.y.saturate(), self.z.saturate())
     }
 
+    #[inline]
     fn sqrt(self) -> Self {
         vec3(self.x.sqrt(), self.y.sqrt(), self.z.sqrt())
     }
 
+    #[inline]
     fn ln(self) -> Self {
         vec3(self.x.ln(), self.y.ln(), self.z.ln())
     }
 
+    #[inline]
     fn reflect(self, normal: Self) -> Self {
         self - 2.0 * normal * self.dot(normal)
     }
 
+    #[inline]
     fn mean(self) -> f32 {
         (self.x + self.y + self.z) / 3.0
     }
 
+    #[inline]
     fn has_equal_components(self, max_abs_diff: f32) -> bool {
         (self.x - self.y).abs() < max_abs_diff
             && (self.y - self.z).abs() < max_abs_diff
             && (self.x - self.z).abs() < max_abs_diff
     }
+
+    #[inline(always)]
+    fn eerp(self, other: Self, a: f32) -> Self {
+        Self::new(
+            self.x.eerp(other.x, a),
+            self.y.eerp(other.y, a),
+            self.z.eerp(other.z, a),
+        )
+    }
+}
+
+impl Vec3Ext for Vec3A {
+    /// For element `i` of `self`, return `v[i].trunc()`
+    #[inline]
+    fn trunc(self) -> Self {
+        vec3a(self.x.trunc(), self.y.trunc(), self.z.trunc())
+    }
+
+    #[inline]
+    fn step(self, value: Self) -> Self {
+        vec3a(
+            self.x.step(value.x),
+            self.y.step(value.y),
+            self.z.step(value.z),
+        )
+    }
+
+    #[inline]
+    fn step_select(self, value: Self, less: Self, greater_or_equal: Self) -> Self {
+        vec3a(
+            self.x.step_select(value.x, less.x, greater_or_equal.x),
+            self.y.step_select(value.y, less.y, greater_or_equal.y),
+            self.z.step_select(value.z, less.z, greater_or_equal.z),
+        )
+    }
+
+    #[inline]
+    fn fract(self) -> Self {
+        vec3a(self.x.fract(), self.y.fract(), self.z.fract())
+    }
+
+    #[inline]
+    fn saturate(self) -> Self {
+        vec3a(self.x.saturate(), self.y.saturate(), self.z.saturate())
+    }
+
+    #[inline]
+    fn sqrt(self) -> Self {
+        vec3a(self.x.sqrt(), self.y.sqrt(), self.z.sqrt())
+    }
+
+    #[inline]
+    fn ln(self) -> Self {
+        vec3a(self.x.ln(), self.y.ln(), self.z.ln())
+    }
+
+    #[inline]
+    fn reflect(self, normal: Self) -> Self {
+        self - 2.0 * normal * self.dot(normal)
+    }
+
+    #[inline]
+    fn mean(self) -> f32 {
+        (self.x + self.y + self.z) / 3.0
+    }
+
+    #[inline]
+    fn has_equal_components(self, max_abs_diff: f32) -> bool {
+        (self.x - self.y).abs() < max_abs_diff
+            && (self.y - self.z).abs() < max_abs_diff
+            && (self.x - self.z).abs() < max_abs_diff
+    }
+
+    #[inline(always)]
+    fn eerp(self, other: Self, a: f32) -> Self {
+        Self::new(
+            self.x.eerp(other.x, a),
+            self.y.eerp(other.y, a),
+            self.z.eerp(other.z, a),
+        )
+    }
 }
 
 /// Coordinate system extension to [`Vec3`]
 ///
-/// This crate is opinionated with what coordinate system it uses and this adds
+/// This crate is opinionated  with what coordinate system it uses and this adds
 /// additional functions to access the coordinate system axis
 ///
 /// The exact coordinate system we use is right-handed with +X = right, +Y = up, -Z = forward, +Z = back

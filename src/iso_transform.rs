@@ -1,4 +1,8 @@
-use glam::{Affine3A, Mat4, Quat, Vec3, Vec3A};
+use glam::Affine3A;
+use glam::Mat4;
+use glam::Quat;
+use glam::Vec3;
+use glam::Vec3A;
 
 /// An isometric transform represented by translation * rotation.
 ///
@@ -8,6 +12,7 @@ use glam::{Affine3A, Mat4, Quat, Vec3, Vec3A};
 /// it will first be rotated and finally translated.
 #[derive(Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "speedy", derive(speedy::Writable, speedy::Readable))]
 pub struct IsoTransform {
     /// Normalized
     pub rotation: Quat,
@@ -83,6 +88,7 @@ impl IsoTransform {
     /// # Panics
     ///
     /// Will panic if the determinant of `t` is zero and the `assert` feature is enabled.
+    #[cfg(not(target_arch = "spirv"))] // TODO: large Options in rust-gpu
     #[inline]
     pub fn from_mat4(t: &Mat4) -> Option<Self> {
         let (scale3, rotation, translation) = t.to_scale_rotation_translation();
@@ -99,6 +105,7 @@ impl IsoTransform {
     /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
     ///
     /// Will return [`None`] if any argument is zero, non-finite, or if forward and up are colinear.
+    #[cfg(not(target_arch = "spirv"))] // TODO: large Options in rust-gpu
     #[inline]
     pub fn look_at_rh(eye: Vec3, target: Vec3, up: Vec3) -> Option<Self> {
         use crate::QuatExt;
@@ -160,7 +167,7 @@ impl IsoTransform {
         let inv_rotation = self.rotation.inverse();
         Self {
             rotation: inv_rotation,
-            translation: inv_rotation * -self.translation,
+            translation: -(inv_rotation * self.translation),
         }
     }
 
@@ -261,7 +268,7 @@ impl core::ops::Mul<IsoTransform> for Mat4 {
     }
 }
 
-impl From<IsoTransform> for Affine3A {
+impl From<IsoTransform> for crate::Affine3A {
     #[inline]
     fn from(iso: IsoTransform) -> Self {
         Self::from_rotation_translation(iso.rotation(), iso.translation())
@@ -275,6 +282,7 @@ impl From<IsoTransform> for Mat4 {
     }
 }
 
+#[cfg(feature = "std")]
 impl core::fmt::Debug for IsoTransform {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let (axis, angle) = self.rotation.to_axis_angle();
@@ -296,6 +304,7 @@ impl core::fmt::Debug for IsoTransform {
                     axis[2],
                 ),
             )
+            .field("rotation(raw)", &self.rotation)
             .finish()
     }
 }
@@ -349,8 +358,6 @@ mod test {
 
     #[test]
     fn transform() {
-        #![allow(clippy::disallowed_methods)] // normalize
-
         let t = [
             IsoTransform {
                 translation: Vec3A::new(0.0, 0.0, 0.0),
@@ -391,6 +398,7 @@ mod test {
     }
 
     fn test_single_transform(t: IsoTransform) {
+        #[cfg(feature = "std")]
         eprintln!("-------------------------------------------\nTesting {t:?}",);
 
         assert_approx_eq_transform!(t, IsoTransform::from_mat4(&t.to_mat4()).unwrap());
@@ -424,6 +432,7 @@ mod test {
     }
 
     fn test_transform_mul(a: IsoTransform, b: IsoTransform) {
+        #[cfg(feature = "std")]
         eprintln!("-------------------------------------------\nTesting {a:?} x {b:?}",);
 
         assert_approx_eq_transform!(

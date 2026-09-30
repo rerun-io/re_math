@@ -1,4 +1,4 @@
-use glam::Vec3;
+use crate::Vec3;
 
 /// A ray in 3-dimensional space: a line through space with a starting point and a direction.
 ///
@@ -7,10 +7,10 @@ use glam::Vec3;
 /// along the ray.
 #[derive(Clone, Copy, Default, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "speedy", derive(speedy::Writable, speedy::Readable))]
 pub struct Ray3 {
     /// Start of the ray
     pub origin: Vec3,
-
     /// Direction of the ray, normalized
     pub dir: Vec3,
 }
@@ -24,36 +24,18 @@ impl Ray3 {
 
     /// `dir` should be normalized
     #[inline]
-    pub const fn from_origin_dir(origin: Vec3, dir: Vec3) -> Self {
+    pub fn from_origin_dir(origin: Vec3, dir: Vec3) -> Self {
         Self { origin, dir }
     }
 
     /// Get normalized ray (where `dir.len() == 1`).
-    ///
-    /// Assumes the direction is finite and non-zero.
-    ///
-    /// See also: [`Self::try_normalize`].
     #[inline]
     #[must_use]
     pub fn normalize(&self) -> Self {
-        #![allow(clippy::disallowed_methods)]
         Self {
             origin: self.origin,
             dir: self.dir.normalize(),
         }
-    }
-
-    /// Get normalized ray (where `dir.len() == 1`).
-    ///
-    /// If the direction was zero or non-finite,
-    /// this will return `None`.
-    #[inline]
-    #[must_use]
-    pub fn try_normalize(&self) -> Option<Self> {
-        self.dir.try_normalize().map(|dir| Self {
-            origin: self.origin,
-            dir,
-        })
     }
 
     /// Returns a new ray that has had its origin moved a given distance forwards along the ray.
@@ -161,8 +143,6 @@ impl core::ops::Mul<Ray3> for glam::Affine3A {
     type Output = Ray3;
 
     fn mul(self, rhs: Ray3) -> Ray3 {
-        #![allow(clippy::disallowed_methods)] // normalize - if we want an ergonomic mul, we cannot have it be fallible. As long as the transform is not degenerate, we are fine
-
         Ray3 {
             origin: self.transform_point3(rhs.origin),
             dir: self.transform_vector3(rhs.dir).normalize(),
@@ -174,8 +154,6 @@ impl core::ops::Mul<Ray3> for glam::Mat4 {
     type Output = Ray3;
 
     fn mul(self, rhs: Ray3) -> Ray3 {
-        #![allow(clippy::disallowed_methods)] // normalize - if we want an ergonomic mul, we cannot have it be fallible. As long as the transform is not degenerate, we are fine
-
         Ray3 {
             origin: self.transform_point3(rhs.origin),
             dir: self.transform_vector3(rhs.dir).normalize(),
@@ -183,6 +161,7 @@ impl core::ops::Mul<Ray3> for glam::Mat4 {
     }
 }
 
+#[cfg(not(target_arch = "spirv"))]
 impl std::fmt::Debug for Ray3 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Ray3")
