@@ -1,28 +1,25 @@
-use glam::{Affine3A, Mat3A, Quat, Vec3};
+use super::Mat3A;
+use super::Vec3;
 
-use crate::{Conformal3, IsoTransform};
-
-/// A 3-dimensional axis-aligned bounding box.
-///
-/// This intentionally does NOT implement `Default` because it is ambiguous what a good default should be
-/// (nothing? everything? zero?)
-#[derive(Clone, Copy, PartialEq)]
+/// A 3-dimensional axis-aligned bounding box
+#[derive(Clone, Copy, Default, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "speedy", derive(speedy::Writable, speedy::Readable))]
 pub struct BoundingBox {
     /// Bounding box minimum (inclusive).
     pub min: Vec3,
-
     /// Bounding box maximum (inclusive).
     pub max: Vec3,
 }
 
+#[cfg(not(target_arch = "spirv"))]
 impl core::fmt::Debug for BoundingBox {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{:?} - {:?}", self.min, self.max)
     }
 }
 
-#[allow(unused)]
+#[expect(unused)]
 impl BoundingBox {
     /// A [`BoundingBox`] that only contains [`Vec3::ZERO`].
     pub const ZERO: Self = Self {
@@ -32,21 +29,27 @@ impl BoundingBox {
 
     /// A [`BoundingBox`] that contains no points.
     ///
-    /// This is useful as the seed for bounding boxes.
-    pub const NOTHING: Self = Self {
-        min: Vec3::INFINITY,
-        max: Vec3::NEG_INFINITY,
-    };
+    /// This is useful as the seed for bounding bounding boxes.
+    #[inline]
+    pub fn nothing() -> Self {
+        Self {
+            min: Vec3::splat(f32::INFINITY),
+            max: Vec3::splat(f32::NEG_INFINITY),
+        }
+    }
 
     /// A [`BoundingBox`] that contains every point.
-    pub const EVERYTHING: Self = Self {
-        min: Vec3::NEG_INFINITY,
-        max: Vec3::INFINITY,
-    };
+    #[inline]
+    pub fn everything() -> Self {
+        Self {
+            min: Vec3::splat(f32::NEG_INFINITY),
+            max: Vec3::splat(f32::INFINITY),
+        }
+    }
 
     /// Create a bounding box from a minimum and maximum position.
     #[inline]
-    pub const fn from_min_max(min: Vec3, max: Vec3) -> Self {
+    pub fn from_min_max(min: Vec3, max: Vec3) -> Self {
         Self { min, max }
     }
 
@@ -65,7 +68,7 @@ impl BoundingBox {
 
     /// Create a bounding box from an iterator of points that the bounding box will cover.
     pub fn from_points(points: impl Iterator<Item = Vec3>) -> Self {
-        let mut bb = Self::NOTHING;
+        let mut bb = Self::nothing();
         for p in points {
             bb.extend(p);
         }
@@ -133,6 +136,7 @@ impl BoundingBox {
         self.min.is_nan() || self.max.is_nan()
     }
 
+    #[cfg(not(target_arch = "spirv"))]
     /// The eight corners of this bounding box.
     pub fn corners(&self) -> [Vec3; 8] {
         [
@@ -150,6 +154,7 @@ impl BoundingBox {
     /// The minimum radius of a sphere, centered at the origin, fully containing the box.
     ///
     /// Requires a well-formed box for the result to be valid.
+    #[cfg(not(target_arch = "spirv"))]
     pub fn bounding_sphere_radius(&self) -> f32 {
         let mut max_dist_square = 0.0f32;
         for corner in self.corners() {
@@ -161,6 +166,7 @@ impl BoundingBox {
     /// The minimum radius of a sphere, centered at the bounding box, fully containing the box.
     ///
     /// Requires a well-formed box for the result to be valid.
+    #[cfg(not(target_arch = "spirv"))]
     pub fn centered_bounding_sphere_radius(&self) -> f32 {
         let mut max_dist_square = 0.0f32;
         let center = self.center();
@@ -202,7 +208,6 @@ impl BoundingBox {
     }
 
     #[must_use]
-    #[inline]
     pub fn union(mut self, other: Self) -> Self {
         self.min = self.min.min(other.min);
         self.max = self.max.max(other.max);
@@ -210,16 +215,15 @@ impl BoundingBox {
     }
 
     /// Returns the smallest volume that is covered by both `self` and `other`,
-    /// or [`Self::NOTHING`] if the boxes are disjoint.
+    /// or [`Self::nothing`] if the boxes are disjoint.
     #[must_use]
-    #[inline]
     pub fn intersection(mut self, other: Self) -> Self {
         let intersection = Self {
             min: self.min.max(other.min),
             max: self.max.min(other.max),
         };
         if intersection.is_nothing() {
-            Self::NOTHING
+            Self::nothing()
         } else {
             intersection
         }
@@ -256,9 +260,10 @@ impl BoundingBox {
     /// Note that the rotated bounding box is very likely larger than the original,
     /// since it must be large enough to contain the now rotated box.
     #[must_use]
-    pub fn rotated_around_origin(&self, q: &Quat) -> Self {
+    #[cfg(not(target_arch = "spirv"))]
+    pub fn rotated_around_origin(&self, q: &crate::Quat) -> Self {
         if self.is_nothing() {
-            Self::NOTHING
+            Self::nothing()
         } else {
             rotate_bounding_box(self.half_size(), self.center(), *q)
         }
@@ -269,9 +274,10 @@ impl BoundingBox {
     /// Note that the rotated bounding box is very likely larger than the original,
     /// since it must be large enough to contain the now rotated box.
     #[must_use]
-    pub fn transform_iso(&self, m: &IsoTransform) -> Self {
+    #[cfg(not(target_arch = "spirv"))]
+    pub fn transform_iso(&self, m: &crate::IsoTransform) -> Self {
         if self.is_nothing() {
-            Self::NOTHING
+            Self::nothing()
         } else {
             transform_bounding_box(self.half_size(), self.center(), m)
         }
@@ -282,9 +288,10 @@ impl BoundingBox {
     /// Note that the rotated bounding box is very likely larger than the original,
     /// since it must be large enough to contain the now rotated box.
     #[must_use]
-    pub fn transform_affine3(&self, m: &Affine3A) -> Self {
+    #[cfg(not(target_arch = "spirv"))]
+    pub fn transform_affine3(&self, m: &crate::Affine3A) -> Self {
         if self.is_nothing() {
-            Self::NOTHING
+            Self::nothing()
         } else {
             transform_bounding_box(self.half_size(), self.center(), m)
         }
@@ -295,9 +302,10 @@ impl BoundingBox {
     /// Note that the rotated bounding box is very likely larger than the original,
     /// since it must be large enough to contain the now rotated box.
     #[must_use]
-    pub fn transform_conformal3(&self, m: &Conformal3) -> Self {
+    #[cfg(not(target_arch = "spirv"))]
+    pub fn transform_conformal3(&self, m: &crate::Conformal3) -> Self {
         if self.is_nothing() {
-            Self::NOTHING
+            Self::nothing()
         } else {
             transform_bounding_box(self.half_size(), self.center(), m)
         }
@@ -315,14 +323,14 @@ impl TransformPoint3 for crate::IsoTransform {
     }
 }
 
-impl TransformPoint3 for Affine3A {
+impl TransformPoint3 for crate::Affine3A {
     #[inline(always)]
     fn transform_point3(&self, p: Vec3) -> Vec3 {
         self.transform_point3(p)
     }
 }
 
-impl TransformPoint3 for Conformal3 {
+impl TransformPoint3 for crate::Conformal3 {
     #[inline(always)]
     fn transform_point3(&self, p: Vec3) -> Vec3 {
         self.transform_point3(p)
@@ -340,20 +348,21 @@ impl ToScaledMat3A for crate::IsoTransform {
     }
 }
 
-impl ToScaledMat3A for Affine3A {
+impl ToScaledMat3A for crate::Affine3A {
     #[inline(always)]
     fn to_scaled_mat3a(&self) -> Mat3A {
         self.matrix3
     }
 }
 
-impl ToScaledMat3A for Conformal3 {
+impl ToScaledMat3A for crate::Conformal3 {
     #[inline(always)]
     fn to_scaled_mat3a(&self) -> Mat3A {
         Mat3A::from_quat(self.rotation()).mul_scalar(self.scale())
     }
 }
 
+#[cfg(not(target_arch = "spirv"))]
 fn transform_bounding_box<T: TransformPoint3 + ToScaledMat3A>(
     half_size: Vec3,
     center: Vec3,
@@ -380,7 +389,8 @@ fn transform_bounding_box<T: TransformPoint3 + ToScaledMat3A>(
     }
 }
 
-fn rotate_bounding_box(half_size: Vec3, center: Vec3, q: Quat) -> BoundingBox {
+#[cfg(not(target_arch = "spirv"))]
+fn rotate_bounding_box(half_size: Vec3, center: Vec3, q: crate::Quat) -> BoundingBox {
     // Inspired by:
     // https://zeux.io/2010/10/17/aabb-from-obb-with-component-wise-abs
 
@@ -403,16 +413,14 @@ fn rotate_bounding_box(half_size: Vec3, center: Vec3, q: Quat) -> BoundingBox {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::Affine3A;
     use crate::Conformal3;
     use crate::IsoTransform;
-    use glam::Affine3A;
-    use glam::Quat;
+    use crate::Quat;
     use std::f32::consts::FRAC_PI_2;
 
     #[test]
     fn test_bounding_box() {
-        use glam::{Affine3A, Quat};
-
         let bb = BoundingBox::from_min_max(Vec3::ZERO, Vec3::ZERO);
         assert!(bb.contains(Vec3::ZERO));
         assert!(bb.is_something());
@@ -438,7 +446,7 @@ mod test {
             BoundingBox::from_min_max(Vec3::splat(0.0), Vec3::splat(1.0)).intersection(
                 BoundingBox::from_min_max(Vec3::splat(2.0), Vec3::splat(3.0))
             ),
-            BoundingBox::NOTHING
+            BoundingBox::nothing()
         );
     }
 

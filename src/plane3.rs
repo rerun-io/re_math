@@ -1,4 +1,4 @@
-use glam::{Vec3, Vec4};
+use crate::Vec3;
 
 /// A 3-dimensional plane primitive.
 ///
@@ -10,11 +10,12 @@ use glam::{Vec3, Vec4};
 ///
 /// A point `point` is on the plane when `plane.normal.dot(point) + plane.d = 0`.
 #[derive(Copy, Clone, PartialEq)]
+#[cfg_attr(not(target_arch = "spirv"), derive(Debug))]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "speedy", derive(speedy::Writable, speedy::Readable))]
 pub struct Plane3 {
     /// Normal vector
     pub normal: Vec3,
-
     /// Distance
     pub d: f32,
 }
@@ -25,13 +26,11 @@ impl Plane3 {
         normal: Vec3::Z,
         d: 0.0,
     };
-
     /// The Y^Z plane with normal = +X
     pub const YZ: Self = Self {
         normal: Vec3::X,
         d: 0.0,
     };
-
     /// The Z^X plane with normal = +Y
     pub const ZX: Self = Self {
         normal: Vec3::Y,
@@ -41,7 +40,7 @@ impl Plane3 {
     /// From the plane normal and a distance `d` so that for all points on the plane:
     /// `normal.dot(point) + d = 0`.
     #[inline]
-    pub const fn from_normal_dist(normal: Vec3, d: f32) -> Self {
+    pub fn from_normal_dist(normal: Vec3, d: f32) -> Self {
         Self { normal, d }
     }
 
@@ -84,11 +83,7 @@ impl Plane3 {
             (false, 0.0)
         } else {
             let t = -(origin.dot(self.normal) + self.d) / denom;
-            if t < 0.0 {
-                (false, t)
-            } else {
-                (true, t)
-            }
+            if t < 0.0 { (false, t) } else { (true, t) }
         }
     }
 
@@ -100,7 +95,7 @@ impl Plane3 {
 
     /// The distance to a point `[x, y, z, 1]` is the dot product of the point and this.
     #[inline]
-    pub fn as_vec4(&self) -> Vec4 {
+    pub fn as_vec4(&self) -> crate::Vec4 {
         self.normal.extend(self.d)
     }
 }

@@ -1,11 +1,12 @@
-use glam::{Quat, Vec3};
+use crate::Quat;
+use crate::Vec3;
 
 /// Extensions to [`Quat`]
 pub trait QuatExt: Sized {
     /// Return a Quaternion that rotates -Z to the `forward` direction,
     /// using `up` to control roll, so that +Y will approximately point in the `up` direction.
     ///
-    /// Will return [`None`] if either argument is zero, non-finite, or if they are colinear.
+    /// Will return [`None`] if either argument is zero, non-finite, or if they are collinear.
     ///
     /// This is generally what you want to use to construct a view-rotation when -Z is forward and +Y is up (this is what Ark uses!).
     fn rotate_negative_z_towards(forward: Vec3, up: Vec3) -> Option<Quat>;
@@ -13,7 +14,7 @@ pub trait QuatExt: Sized {
     /// Return a Quaternion that rotates +Z to the `forward` direction,
     /// using `up` to control roll, so that +Y will approximately point in the `up` direction.
     ///
-    /// Will return [`None`] if either argument is zero, non-finite, or if they are colinear.
+    /// Will return [`None`] if either argument is zero, non-finite, or if they are collinear.
     ///
     /// This is generally what you want to use to construct a view-rotation when +Z is forward and +Y is up.
     fn rotate_positive_z_towards(forward: Vec3, up: Vec3) -> Option<Quat>;
@@ -46,13 +47,15 @@ impl QuatExt for Quat {
 }
 
 #[cfg(test)]
+#[expect(
+    clippy::disallowed_methods,
+    reason = "tests normalize non-zero constants"
+)]
 mod test {
     use super::*;
 
     #[test]
     fn test_rotate_negative_z_towards() {
-        #![allow(clippy::disallowed_methods)] // normalize
-
         let desired_fwd = Vec3::new(1.0, 2.0, 3.0).normalize();
         let desired_up = Vec3::new(4.0, 5.0, 6.0).normalize();
 
@@ -61,7 +64,7 @@ mod test {
         let rotated_z = rot * -Vec3::Z;
         assert!(
             (rotated_z - desired_fwd).length() < 1e-5,
-            "Expected to rotate -Z to {desired_fwd}, but got {rotated_z}"
+            "Expected to rotate -Z to {desired_fwd}, but got {rotated_z}",
         );
 
         let rotated_y = rot * Vec3::Y;
@@ -73,8 +76,6 @@ mod test {
 
     #[test]
     fn test_rotate_positive_z_towards() {
-        #![allow(clippy::disallowed_methods)] // normalize
-
         let desired_fwd = Vec3::new(1.0, 2.0, 3.0).normalize();
         let desired_up = Vec3::new(4.0, 5.0, 6.0).normalize();
 

@@ -1,6 +1,11 @@
-use glam::{uvec4, vec4, UVec4, Vec4};
-
+use super::UVec4;
+use super::Vec4;
 use super::prelude::*;
+use super::uvec4;
+use super::vec4;
+
+#[cfg(target_arch = "spirv")]
+use num_traits::Float;
 
 /// Extensions to [`Vec4`]
 ///
@@ -16,13 +21,17 @@ pub trait Vec4Ext {
     #[must_use]
     fn step(self, value: Self) -> Self;
 
-    /// Selects between `true` and `false` based on the result of `value[i] < self[i]`
+    /// Selects between `less` and `greater_or_equal` per component, based on the result of `value[i] < self[i]`
     #[must_use]
-    fn step_select(self, value: Self, true_: Self, false_: Self) -> Self;
+    fn step_select(self, value: Self, less: Self, greater_or_equal: Self) -> Self;
 
     /// Return only the fractional parts of each component.
     #[must_use]
     fn fract(self) -> Self;
+
+    /// Return only the sine of each component.
+    #[must_use]
+    fn sin(self) -> Self;
 
     /// Return the square root of each component.
     #[must_use]
@@ -57,7 +66,7 @@ impl Vec4Ext for Vec4 {
             self.x.step(value.x),
             self.y.step(value.y),
             self.z.step(value.z),
-            self.w.step(value.z),
+            self.w.step(value.w),
         )
     }
 
@@ -78,6 +87,11 @@ impl Vec4Ext for Vec4 {
             self.z.fract(),
             self.w.fract(),
         )
+    }
+
+    #[inline]
+    fn sin(self) -> Self {
+        vec4(self.x.sin(), self.y.sin(), self.z.sin(), self.w.sin())
     }
 
     fn sqrt(self) -> Self {
@@ -110,6 +124,15 @@ impl Vec4Ext for Vec4 {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn test_step_uses_every_component() {
+        let edge = vec4(0.5, 0.5, 0.5, 0.5);
+        assert_eq!(
+            edge.step(vec4(1.0, 0.0, 1.0, 0.0)),
+            vec4(1.0, 0.0, 1.0, 0.0)
+        );
+    }
 
     #[test]
     fn test_mean() {

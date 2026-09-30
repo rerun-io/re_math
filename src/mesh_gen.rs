@@ -1,8 +1,6 @@
-use std::ops::Range;
-
-use glam::Vec3;
-
 use crate::IsoTransform;
+use crate::Vec3;
+use std::ops::Range;
 
 /// Raw mesh generator. Only generates positions, normals and an index buffer.
 ///
@@ -37,12 +35,15 @@ impl MeshGen {
         Self::default()
     }
 
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "cube face normals are never degenerate"
+    )]
     pub fn push_cube(&mut self, half_size: Vec3, transform: IsoTransform) -> Range<usize> {
-        #![allow(clippy::disallowed_methods)] // Use of normalize fine as long as the input is not degenerate.
-
         let s = half_size;
 
-        let index_offset = self.positions.len() as u32;
+        let index_offset =
+            u32::try_from(self.positions.len()).expect("Too many vertices for u32 indices");
 
         //
         //      a +--------------+ b
@@ -139,10 +140,11 @@ impl MeshGen {
         subdivision_y: usize,
         transform: IsoTransform,
     ) -> Range<usize> {
-        let index_offset = self.positions.len() as u32;
+        let index_offset =
+            u32::try_from(self.positions.len()).expect("Too many vertices for u32 indices");
 
-        let subdivision_x = 3.max(subdivision_x as u32);
-        let subdivision_y = 3.max(subdivision_y as u32);
+        let subdivision_x = u32::try_from(subdivision_x).unwrap_or(u32::MAX).max(3);
+        let subdivision_y = u32::try_from(subdivision_y).unwrap_or(u32::MAX).max(3);
 
         let delta_x = 2.0 * std::f32::consts::PI / subdivision_x as f32;
         let delta_y = std::f32::consts::PI / subdivision_y as f32;
@@ -160,7 +162,7 @@ impl MeshGen {
         for y in 1..subdivision_y {
             let angle_y = delta_y * y as f32;
             let y_offset = if y >= middle { length_y } else { 0.0 };
-            // TODO(emilk): The middle stripe on capsules should really be a whole extra ring.
+            // TODO: The middle stripe on capsules should really be a whole extra ring.
             // Still looks "good enough" with enough tessellation, but should be fixed.
             // let midstripe = y == middle || y == middle + 1;
             for x in 0..subdivision_x {

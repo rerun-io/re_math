@@ -1,17 +1,23 @@
-use glam::{Affine3A, Mat4, Quat, Vec3, Vec3A, Vec4, Vec4Swizzles};
+use glam::Affine3A;
+use glam::Mat4;
+use glam::Vec3A;
 
-use crate::{IsoTransform, Vec3Ext};
+use crate::IsoTransform;
+use crate::Quat;
+use crate::Vec3;
+use crate::Vec3Ext as _;
+use crate::Vec4;
+use crate::Vec4Swizzles as _;
 
 /// Represents a transform with translation + rotation + uniform scale.
-///
 /// Preserves local angles.
 /// Scale and rotation will be applied first, then translation.
 #[derive(Clone, Copy, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "speedy", derive(speedy::Writable, speedy::Readable))]
 pub struct Conformal3 {
     /// xyz = translation, w = uniform scale
     pub translation_and_scale: Vec4,
-
     pub rotation: Quat,
 }
 
@@ -75,7 +81,7 @@ impl Conformal3 {
         Self::from_scale_rotation_translation(scale, Quat::IDENTITY, Vec3::ZERO)
     }
 
-    /// Returns the inverse of this transform. `my_transform * my_transform.inverse() = Conformal3::IDENITTY`
+    /// Returns the inverse of this transform. `my_transform * my_transform.inverse() = Conformal3::IDENTITY`
     #[inline]
     pub fn inverse(&self) -> Self {
         let inv_scale = self.inv_scale();
@@ -98,7 +104,7 @@ impl Conformal3 {
     /// Will attempt to create a `Conformal3` from an `Affine3A`. Assumes no shearing and uniform scaling.
     /// If the affine transform contains shearing or non-uniform scaling it will be lost.
     #[inline]
-    pub fn from_affine3a_lossy(transform: &Affine3A) -> Self {
+    pub fn from_affine3a_lossy(transform: &crate::Affine3A) -> Self {
         let (scale, rotation, translation) = transform.to_scale_rotation_translation();
         Self {
             translation_and_scale: translation.extend(scale.mean()),
@@ -221,7 +227,8 @@ impl Conformal3 {
     ///
     /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
     ///
-    /// Will return [`None`] if any argument is zero, non-finite, or if forward and up are colinear.
+    /// Will return [`None`] if any argument is zero, non-finite, or if forward and up are collinear.
+    #[cfg(not(target_arch = "spirv"))] // TODO: large Options in rust-gpu
     #[inline]
     pub fn look_at_rh(eye: Vec3, target: Vec3, up: Vec3) -> Option<Self> {
         IsoTransform::look_at_rh(eye, target, up).map(Self::from_iso_transform)
@@ -299,7 +306,7 @@ impl From<Conformal3> for Mat4 {
     }
 }
 
-impl From<Conformal3> for Affine3A {
+impl From<Conformal3> for crate::Affine3A {
     #[inline]
     fn from(c: Conformal3) -> Self {
         c.to_affine3a()
@@ -313,6 +320,7 @@ impl From<IsoTransform> for Conformal3 {
     }
 }
 
+#[cfg(not(target_arch = "spirv"))]
 impl core::fmt::Debug for Conformal3 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let (axis, angle) = self.rotation().to_axis_angle();
@@ -333,12 +341,16 @@ impl core::fmt::Debug for Conformal3 {
                     axis[2],
                 ),
             )
-            .field("scale", &scale)
+            .field("scale", &format!("{scale}"))
             .finish()
     }
 }
 
 #[cfg(test)]
+#[expect(
+    clippy::disallowed_methods,
+    reason = "tests normalize non-zero constants"
+)]
 mod test {
     use super::*;
 
@@ -357,8 +369,6 @@ mod test {
 
     #[test]
     fn test_inverse() {
-        #![allow(clippy::disallowed_methods)] // normalize
-
         use crate::Conformal3;
 
         let transform = Conformal3::from_scale_rotation_translation(
