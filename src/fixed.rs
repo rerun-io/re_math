@@ -1,19 +1,23 @@
-#![allow(clippy::manual_range_contains)]
-#![allow(clippy::cast_lossless)]
+#![expect(
+    clippy::cast_possible_truncation,
+    reason = "fixed-point arithmetic truncates to the storage width by design"
+)]
 
-use core::ops::*;
+use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 const U16_MAX: f32 = u16::MAX as f32;
 const U8_MAX: f32 = u8::MAX as f32;
 
+/// Error returned when constructing a normalized fixed-point value from an out-of-range float.
 #[derive(Debug, Clone)]
 pub enum UNormError {
+    /// The float was NaN or outside the `0..=1` range.
     UnnormalizedFloat,
 }
 
 impl core::fmt::Display for UNormError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 
@@ -34,6 +38,10 @@ impl std::error::Error for UNormError {}
 pub struct UNorm16(pub u16);
 
 impl UNorm16 {
+    /// Creates a value from a float in the `0..=1` range.
+    ///
+    /// # Errors
+    /// Returns [`UNormError::UnnormalizedFloat`] if `x` is NaN or outside `0..=1`.
     #[inline]
     pub fn new(x: f32) -> Result<Self, UNormError> {
         if !x.is_nan() && x >= 0.0 && x <= 1.0 {
@@ -156,6 +164,10 @@ impl core::fmt::Debug for UNorm16 {
 pub struct UNorm8(pub u8);
 
 impl UNorm8 {
+    /// Creates a value from a float in the `0..=1` range.
+    ///
+    /// # Errors
+    /// Returns [`UNormError::UnnormalizedFloat`] if `x` is NaN or outside `0..=1`.
     #[inline]
     pub fn new(x: f32) -> Result<Self, UNormError> {
         if !x.is_nan() && x >= 0.0 && x <= 1.0 {

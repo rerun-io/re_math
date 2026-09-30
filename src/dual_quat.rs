@@ -12,7 +12,7 @@ use crate::IsoTransform;
 use crate::Quat;
 use crate::Vec3;
 use crate::Vec4;
-use crate::Vec4Swizzles;
+use crate::Vec4Swizzles as _;
 
 #[cfg(target_arch = "spirv")]
 use num_traits::Float;
@@ -216,7 +216,10 @@ impl DualQuat {
     /// Will panic in debug builds if it is not normalized.
     #[inline]
     pub fn inverse(self) -> Self {
-        debug_assert!(self.is_normalized());
+        debug_assert!(
+            self.is_normalized(),
+            "DualQuat::inverse requires a normalized dual quaternion"
+        );
         self.conjugate()
     }
 
@@ -308,8 +311,8 @@ impl DualQuat {
     pub fn normalize_to_rotation_translation(mut self) -> (Quat, Vec3) {
         let real_norm_inv = self.real.length_recip();
 
-        self.real = self.real * real_norm_inv;
-        self.dual = self.dual * real_norm_inv;
+        self.real *= real_norm_inv;
+        self.dual *= real_norm_inv;
         self.to_rotation_translation()
     }
 
@@ -431,7 +434,7 @@ impl core::ops::Mul<DualScalar> for DualQuat {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(not(target_arch = "spirv"))]
 impl core::fmt::Debug for DualQuat {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let (rot, translation) = self.to_rotation_translation();
@@ -458,6 +461,10 @@ impl core::fmt::Debug for DualQuat {
 }
 
 #[cfg(test)]
+#[expect(
+    clippy::disallowed_methods,
+    reason = "tests normalize non-zero constants"
+)]
 mod test {
     use super::*;
 

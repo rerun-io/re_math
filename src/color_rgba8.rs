@@ -23,11 +23,6 @@
 //! For instance `[1.0, 0.0, 0.0, 0.0]` is red without any opaquness.
 //! So it won't cover whatever is behind it, but will ADD to it.
 
-#[cfg(feature = "bytemuck")]
-use bytemuck::Pod;
-#[cfg(feature = "bytemuck")]
-use bytemuck::Zeroable;
-
 use crate::Vec4;
 
 /// A compressed sRGBA color, 8-bit per component, 32-bit total.
@@ -38,21 +33,19 @@ use crate::Vec4;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "speedy", derive(speedy::Writable, speedy::Readable))]
+#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
 #[repr(transparent)]
 pub struct ColorRgba8(pub [u8; 4]);
 
 impl From<ColorRgba8> for u32 {
     fn from(c: ColorRgba8) -> Self {
-        Self::from(c.0[0]) << 24
-            | Self::from(c.0[1]) << 16
-            | Self::from(c.0[2]) << 8
-            | Self::from(c.0[3])
+        Self::from_be_bytes(c.0)
     }
 }
 
 impl From<u32> for ColorRgba8 {
     fn from(c: u32) -> Self {
-        Self([(c >> 24) as u8, (c >> 16) as u8, (c >> 8) as u8, c as u8])
+        Self(c.to_be_bytes())
     }
 }
 
@@ -68,14 +61,6 @@ impl From<ColorRgba8> for [u8; 4] {
     }
 }
 
-#[cfg(feature = "bytemuck")]
-// SAFETY: A `[u8; N]` is always Pod, and this is a transparent wrapper.
-unsafe impl Pod for ColorRgba8 {}
-
-#[cfg(feature = "bytemuck")]
-// SAFETY: A `[u8; N]` is always Zeroable, and this is a transparent wrapper.
-unsafe impl Zeroable for ColorRgba8 {}
-
 /// sRGBA from linear RGBA in [0-1] range
 impl From<Vec4> for ColorRgba8 {
     fn from(v: Vec4) -> Self {
@@ -84,13 +69,7 @@ impl From<Vec4> for ColorRgba8 {
             srgb_byte_from_linear(v.x),
             srgb_byte_from_linear(v.y),
             srgb_byte_from_linear(v.z),
-            if a > 1.0 {
-                255
-            } else if a <= 0.0 {
-                0
-            } else {
-                (a * 255.0).round() as u8
-            },
+            byte_from_linear_alpha(a),
         ])
     }
 }
@@ -103,13 +82,7 @@ impl From<[f32; 4]> for ColorRgba8 {
             srgb_byte_from_linear(c[0]),
             srgb_byte_from_linear(c[1]),
             srgb_byte_from_linear(c[2]),
-            if a > 1.0 {
-                255
-            } else if a <= 0.0 {
-                0
-            } else {
-                (a * 255.0).round() as u8
-            },
+            byte_from_linear_alpha(a),
         ])
     }
 }
@@ -137,8 +110,28 @@ fn linear_from_srgb_byte(s: u8) -> f32 {
     }
 }
 
+/// Encodes 0-1 linear alpha as a 0-255 byte.
+#[inline]
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "the value is clamped to 0-255 before the cast"
+)]
+fn byte_from_linear_alpha(a: f32) -> u8 {
+    if a > 1.0 {
+        255
+    } else if a <= 0.0 {
+        0
+    } else {
+        (a * 255.0).round() as u8
+    }
+}
+
 /// Encodes 0-1 linear space as 0-255 sRGB space
 #[inline]
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "each branch produces a value in 0-255 before the cast"
+)]
 fn srgb_byte_from_linear(l: f32) -> u8 {
     if l <= 0.0 {
         0

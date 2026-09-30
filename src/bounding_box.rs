@@ -5,7 +5,6 @@ use super::Vec3;
 #[derive(Clone, Copy, Default, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "speedy", derive(speedy::Writable, speedy::Readable))]
-#[cfg_attr(feature = "speedy", allow(clippy::manual_slice_size_calculation))]
 pub struct BoundingBox {
     /// Bounding box minimum (inclusive).
     pub min: Vec3,
@@ -20,7 +19,7 @@ impl core::fmt::Debug for BoundingBox {
     }
 }
 
-#[allow(unused)]
+#[expect(unused)]
 impl BoundingBox {
     /// A [`BoundingBox`] that only contains [`Vec3::ZERO`].
     pub const ZERO: Self = Self {
@@ -460,7 +459,7 @@ mod test {
         let bb = BoundingBox::from_center_size(Vec3::ZERO, Vec3::splat(SIZE));
         let bb_transformed = bb.rotated_around_origin(&rotation);
 
-        let expected_size_xy: f32 = (2.0 * SIZE * SIZE).sqrt();
+        let expected_size_xy = (2.0 * SIZE * SIZE).sqrt();
         assert!(Vec3::distance(bb_transformed.center(), Vec3::ZERO) < EPSILON);
         assert!(
             Vec3::distance(
@@ -481,7 +480,7 @@ mod test {
         let bb = BoundingBox::from_center_size(Vec3::ZERO, Vec3::splat(SIZE));
         let bb_transformed = bb.transform_iso(&transform);
 
-        let expected_size_xy: f32 = (2.0 * SIZE * SIZE).sqrt();
+        let expected_size_xy = (2.0 * SIZE * SIZE).sqrt();
         assert!(Vec3::distance(bb_transformed.center(), translation) < EPSILON);
         assert!(
             Vec3::distance(
@@ -504,7 +503,7 @@ mod test {
         let bb = BoundingBox::from_center_size(Vec3::ZERO, Vec3::splat(SIZE));
         let bb_transformed = bb.transform_affine3(&transform);
 
-        let expected_size_xy: f32 = (2.0 * SIZE * SIZE * SCALE * SCALE).sqrt();
+        let expected_size_xy = (2.0 * SIZE * SIZE * SCALE * SCALE).sqrt();
         assert!(Vec3::distance(bb_transformed.center(), translation) < EPSILON);
         assert!(
             Vec3::distance(
@@ -526,7 +525,7 @@ mod test {
         let bb = BoundingBox::from_center_size(Vec3::ZERO, Vec3::splat(SIZE));
         let bb_transformed = bb.transform_conformal3(&transform);
 
-        let expected_size_xy: f32 = (2.0 * SIZE * SIZE * SCALE * SCALE).sqrt();
+        let expected_size_xy = (2.0 * SIZE * SIZE * SCALE * SCALE).sqrt();
         assert!(Vec3::distance(bb_transformed.center(), translation) < EPSILON);
         assert!(
             Vec3::distance(

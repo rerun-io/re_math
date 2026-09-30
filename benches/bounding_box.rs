@@ -3,7 +3,9 @@
 mod macros;
 mod support;
 
-use support::*;
+use support::{
+    random_affine3, random_bounding_box, random_conformal3, random_iso_transform, random_quat,
+};
 
 fn main() {
     rotated_around_origin();

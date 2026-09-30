@@ -6,7 +6,7 @@ pub trait QuatExt: Sized {
     /// Return a Quaternion that rotates -Z to the `forward` direction,
     /// using `up` to control roll, so that +Y will approximately point in the `up` direction.
     ///
-    /// Will return [`None`] if either argument is zero, non-finite, or if they are colinear.
+    /// Will return [`None`] if either argument is zero, non-finite, or if they are collinear.
     ///
     /// This is generally what you want to use to construct a view-rotation when -Z is forward and +Y is up (this is what Ark uses!).
     fn rotate_negative_z_towards(forward: Vec3, up: Vec3) -> Option<Quat>;
@@ -14,7 +14,7 @@ pub trait QuatExt: Sized {
     /// Return a Quaternion that rotates +Z to the `forward` direction,
     /// using `up` to control roll, so that +Y will approximately point in the `up` direction.
     ///
-    /// Will return [`None`] if either argument is zero, non-finite, or if they are colinear.
+    /// Will return [`None`] if either argument is zero, non-finite, or if they are collinear.
     ///
     /// This is generally what you want to use to construct a view-rotation when +Z is forward and +Y is up.
     fn rotate_positive_z_towards(forward: Vec3, up: Vec3) -> Option<Quat>;
@@ -47,6 +47,10 @@ impl QuatExt for Quat {
 }
 
 #[cfg(test)]
+#[expect(
+    clippy::disallowed_methods,
+    reason = "tests normalize non-zero constants"
+)]
 mod test {
     use super::*;
 
@@ -60,17 +64,13 @@ mod test {
         let rotated_z = rot * -Vec3::Z;
         assert!(
             (rotated_z - desired_fwd).length() < 1e-5,
-            "Expected to rotate -Z to {}, but got {}",
-            desired_fwd,
-            rotated_z,
+            "Expected to rotate -Z to {desired_fwd}, but got {rotated_z}",
         );
 
         let rotated_y = rot * Vec3::Y;
         assert!(
             rotated_y.dot(desired_up) >= 0.0,
-            "Expected to rotate +Y to point approximately towards {}, but got {}",
-            desired_up,
-            rotated_y,
+            "Expected to rotate +Y to point approximately towards {desired_up}, but got {rotated_y}",
         );
     }
 
@@ -84,17 +84,13 @@ mod test {
         let rotated_z = rot * Vec3::Z;
         assert!(
             (rotated_z - desired_fwd).length() < 1e-5,
-            "Expected to rotate +Z to {}, but got {}",
-            desired_fwd,
-            rotated_z,
+            "Expected to rotate +Z to {desired_fwd}, but got {rotated_z}",
         );
 
         let rotated_y = rot * Vec3::Y;
         assert!(
             rotated_y.dot(desired_up) >= 0.0,
-            "Expected to rotate +Y to point approximately towards {}, but got {}",
-            desired_up,
-            rotated_y,
+            "Expected to rotate +Y to point approximately towards {desired_up}, but got {rotated_y}",
         );
     }
 }

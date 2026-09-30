@@ -27,9 +27,9 @@ pub trait Vec2Ext {
     #[must_use]
     fn step(self, value: Self) -> Self;
 
-    /// Selects between `true` and `false` based on the result of `value[i] < self[i]`
+    /// Selects between `less` and `greater_or_equal` per component, based on the result of `value[i] < self[i]`
     #[must_use]
-    fn step_select(self, value: Self, tru: Self, fals: Self) -> Self;
+    fn step_select(self, value: Self, less: Self, greater_or_equal: Self) -> Self;
 
     /// Return only the fractional parts of each component.
     #[must_use]
@@ -82,7 +82,7 @@ impl Vec2Ext for Vec2 {
     }
 
     fn mean(self) -> f32 {
-        (self.x + self.y) / 2.0
+        f32::midpoint(self.x, self.y)
     }
 
     fn has_equal_components(self, max_abs_diff: f32) -> bool {

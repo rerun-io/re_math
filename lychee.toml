@@ -40,9 +40,9 @@ exclude_path = [
   "_deps/",
   ".pixi",
   "build",
-  "target_ra",
-  "target_wasm",
   "target",
+  "target_ra", # legacy
+  "target_wasm", # legacy
   "venv",
 ]
 
@@ -77,9 +77,11 @@ exclude = [
   'https://github.com/rerun-io/rerun/commit/\.*', # Ignore links to our own commits (typically in changelog).
   'https://github.com/rerun-io/rerun/pull/\.*',   # Ignore links to our own pull requests (typically in changelog).
 
-  # Used in rerun_template repo until the user search-replaces `re_math`
-  'https://github.com/rerun-io/re_math',
+  # Sites that return 403 Forbidden to bots, but work in a browser.
+  'https://math.stackexchange.com/',
+  'https://stackoverflow.com/',
+  'https://cs.gmu.edu/',
 
-  'https://blog.rust-lang.org',               # 404 in old macaw CHANGELOG.md
+  'https://blog.rust-lang.org',             # 404 in old macaw CHANGELOG.md
   'https://github.com/EmbarkStudios/wim-app', # 404 in old macaw CHANGELOG.md
 ]

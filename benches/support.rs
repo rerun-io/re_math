@@ -12,7 +12,6 @@ use re_math::Vec3;
 use re_math::Vec3A;
 use re_math::Vec4;
 
-#[allow(clippy::upper_case_acronyms)]
 pub struct PCG32 {
     state: u64,
     inc: u64,
@@ -30,6 +29,10 @@ impl PCG32 {
         rng
     }
 
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "PCG32 outputs the low 32 bits of the rotated state"
+    )]
     pub fn next_u32(&mut self) -> u32 {
         let oldstate = self.state;
         self.state = oldstate

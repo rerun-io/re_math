@@ -56,9 +56,11 @@ pub fn remap_clamp(x: f32, from: RangeInclusive<f32>, to: RangeInclusive<f32>) -
     }
 }
 
-/// Aka "lerp smoothing". Meant to be called per-frame, to interpolate between
-/// `curr` and `target`. `decay_rate` controls the speed of interpolation, with a usable
-/// range of around 1.0 and 25.0, from slow to fast. `dt` is the current frame time.
+/// Frame-rate independent exponential smoothing from `curr` towards `target`, aka "lerp smoothing".
+///
+/// Meant to be called once per frame.
+/// `decay_rate` controls the speed of interpolation, with a usable range of around 1.0 to 25.0, from slow to fast.
+/// `dt` is the current frame time.
 #[inline(always)]
 pub fn exp_decay(curr: f32, target: f32, decay_rate: f32, dt: f32) -> f32 {
     target + (curr - target) * exp_fast(-decay_rate * dt)
@@ -88,6 +90,10 @@ pub fn exp_fast(p: f32) -> f32 {
 
 /// Fast approximation of exponentiating 2 to a floating point power.
 #[inline(always)]
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "the approximation constructs the result's IEEE 754 bit pattern directly"
+)]
 pub fn exp2_fast(p: f32) -> f32 {
     let offset = if p < 0.0 { 1.0_f32 } else { 0.0_f32 };
     let clipp = if p < -126.0 { -126.0_f32 } else { p };
@@ -105,7 +111,7 @@ pub fn powf_fast(x: f32, p: f32) -> f32 {
     exp2_fast(p * log2_fast(x))
 }
 
-#[allow(clippy::float_cmp)]
+#[expect(clippy::float_cmp)]
 #[cfg(test)]
 mod test {
     use super::*;

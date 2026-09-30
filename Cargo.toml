@@ -1,21 +1,24 @@
 [package]
+name = "re_math"
+version = "0.33.0"
 authors = [
-    "Embark <opensource@embark-studios.com>",
-    "rerun.io <opensource@rerun.io>",
+  "Embark <opensource@embark-studios.com>",
+  "rerun.io <opensource@rerun.io>",
 ]
-categories = ["game-engines"]
-description = "An opinionated game math library built on top the excellent glam"
+categories = ["mathematics", "game-engines", "graphics"]
+description = "3D math primitives built on top of glam: bounding boxes, rigid transforms, planes, rays and mesh generation."
 edition = "2024"
 homepage = "https://github.com/rerun-io/re_math"
 include = ["LICENSE-APACHE", "LICENSE-MIT", "**/*.rs", "Cargo.toml"]
-keywords = ["gamedev", "math"]
+keywords = ["math", "glam", "geometry", "3d", "gamedev"]
 license = "MIT OR Apache-2.0"
-name = "re_math"
 publish = true
 readme = "README.md"
 repository = "https://github.com/rerun-io/re_math"
-rust-version = "1.85"
-version = "0.20.0"
+rust-version = "1.95.0"
+
+[lints]
+workspace = true
 
 [package.metadata.docs.rs]
 all-features = true
@@ -24,43 +27,50 @@ targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
 
 [features]
 default = ["std"]
+
+## Always enable `glam`'s extra assertions.
+assert = ["glam/glam-assert"]
+
+## Implement [`bytemuck`](https://docs.rs/bytemuck) traits for `ColorRgba8`, and enable them in `glam`.
+bytemuck = ["dep:bytemuck", "glam/bytemuck"]
+
+## Enable `glam`'s extra assertions when debug assertions are enabled.
+debug_assert = ["glam/debug-glam-assert"]
+
+## Use [`libm`](https://docs.rs/libm) for math functions, for `no_std` targets.
 libm = ["glam/libm"]
-std = ["glam/std"]
+
+## Enable [`mint`](https://docs.rs/mint) conversions in `glam`.
 mint = ["glam/mint"]
-bytemuck = ["dep:bytemuck", "glam/bytemuck", "bytemuck/derive"]
+
+## Implement [`serde`](https://docs.rs/serde) `Serialize` and `Deserialize` for all types.
 serde = ["dep:serde", "glam/serde"]
+
+## Implement [`speedy`](https://docs.rs/speedy) `Readable` and `Writable` for all types.
 speedy = ["dep:speedy", "glam/speedy"]
 
-# enable additional checks if debug assertions are enabled
-debug_assert = ["glam/debug-glam-assert"]
-# always enable additional checks
-assert = ["glam/glam-assert"]
+## Use the standard library.
+std = ["glam/std"]
 
 
 [dependencies]
-bytemuck = { version = "1", optional = true }
-glam = { version = "0.30" }
-serde = { version = "1.0", default-features = false, optional = true, features = [
-    "derive",
-] }
+glam = { version = "0.33.11", default-features = false, features = ["f64", "i32", "u32"] }
+
+bytemuck = { version = "1.25", optional = true, features = ["derive"] }
+document-features = { version = "0.2.12", optional = true }
+serde = { version = "1.0", optional = true, default-features = false, features = ["derive"] }
 speedy = { version = "0.8", optional = true }
 
 [target.'cfg(target_arch = "spirv")'.dependencies]
-num-traits = { version = "0.2.14", default-features = false, features = [
-    "libm",
-] }
+num-traits = { version = "0.2.19", default-features = false, features = ["libm"] }
 
 [dev-dependencies]
-tiny-bench = "0.3.0"
+tiny-bench = "0.4.0"
 
 
 [lib]
-doctest = false
+doctest = true
 test = true
-
-[[bench]]
-harness = false
-name = "iso_transform"
 
 [[bench]]
 harness = false
@@ -70,87 +80,167 @@ name = "bounding_box"
 harness = false
 name = "conformal3"
 
+[[bench]]
+harness = false
+name = "iso_transform"
 
-[lints.clippy]
-# BEGIN - Embark standard lints v5 for Rust 1.55+
-# do not change or add/remove here, but one can add exceptions after this section and comment out it here for that
-# for more info see: <https://github.com/EmbarkStudios/rust-ecosystem/issues/59>
+
+# ----------------------------------------------------------------------------------------
+# Lints:
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+elided_lifetimes_in_paths = "warn"
+future_incompatible = { level = "warn", priority = -1 }
+nonstandard_style = { level = "warn", priority = -1 }
+rust_2018_idioms = { level = "warn", priority = -1 }
+rust_2021_prelude_collisions = "warn"
+semicolon_in_expressions_from_macros = "warn"
+trivial_numeric_casts = "warn"
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_arch, values("spirv"))'] }
+unsafe_op_in_unsafe_fn = "warn" # `unsafe_op_in_unsafe_fn` may become the default in future Rust versions: https://github.com/rust-lang/rust/issues/71668
+unused_extern_crates = "warn"
+unused_import_braces = "warn"
+unused_lifetimes = "warn"
+
+trivial_casts = "allow"
+unused_qualifications = "allow"
+
+[workspace.lints.rustdoc]
+all = "warn"
+broken_intra_doc_links = "warn"
+missing_crate_level_docs = "warn"
+
+# See also clippy.toml
+[workspace.lints.clippy]
 all = { level = "warn", priority = -1 }
+cargo = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+
+allow_attributes = "warn"
+as_ptr_cast_mut = "warn"
 await_holding_lock = "warn"
+branches_sharing_code = "warn"
 char_lit_as_u8 = "warn"
-checked_conversions = "warn"
 clear_with_drain = "warn"
+clone_on_ref_ptr = "warn"
+coerce_container_to_any = "warn"
 dbg_macro = "warn"
 debug_assert_with_mut_call = "warn"
-disallowed_methods = "warn"
-disallowed_types = "warn"
-doc_markdown = "warn"
-empty_enum = "warn"
-enum_glob_use = "warn"
+default_union_representation = "warn"
+derive_partial_eq_without_eq = "warn"
+disallowed_macros = "warn" # See clippy.toml
+disallowed_methods = "warn" # See clippy.toml
+disallowed_names = "warn" # See clippy.toml
+disallowed_script_idents = "warn" # See clippy.toml
+disallowed_types = "warn" # See clippy.toml
+doc_include_without_cfg = "warn"
+empty_enum_variants_with_brackets = "warn"
+empty_line_after_outer_attr = "warn"
+equatable_if_let = "warn"
 exit = "warn"
-expl_impl_clone_on_copy = "warn"
-explicit_deref_methods = "warn"
-explicit_into_iter_loop = "warn"
 fallible_impl_from = "warn"
-filter_map_next = "warn"
-flat_map_option = "warn"
 float_cmp_const = "warn"
-fn_params_excessive_bools = "warn"
-from_iter_instead_of_collect = "warn"
+fn_to_numeric_cast_any = "warn"
+get_unwrap = "warn"
 if_let_mutex = "warn"
-implicit_clone = "warn"
+implied_bounds_in_impls = "warn"
 imprecise_flops = "warn"
-inefficient_to_string = "warn"
-invalid_upcast_comparisons = "warn"
-large_digit_groups = "warn"
-large_stack_arrays = "warn"
-large_types_passed_by_value = "warn"
+infinite_loop = "warn"
+iter_on_empty_collections = "warn"
+iter_on_single_items = "warn"
+iter_over_hash_type = "warn"
+large_include_file = "warn"
+large_stack_frames = "warn"
+let_underscore_must_use = "warn"
+let_underscore_untyped = "warn"
 let_unit_value = "warn"
-linkedlist = "warn"
+literal_string_with_formatting_args = "warn"
 lossy_float_literal = "warn"
-macro_use_imports = "warn"
+manual_clamp = "warn"
+manual_ilog2 = "warn"
 manual_ok_or = "warn"
 map_err_ignore = "warn"
 map_flatten = "warn"
-map_unwrap_or = "warn"
-match_on_vec_items = "warn"
-match_same_arms = "warn"
-match_wild_err_arm = "warn"
-match_wildcard_for_single_variants = "warn"
 mem_forget = "warn"
+missing_assert_message = "warn"
 missing_enforced_import_renames = "warn"
-mut_mut = "warn"
+missing_safety_doc = "warn"
+mixed_attributes_style = "warn"
 mutex_integer = "warn"
 needless_borrow = "warn"
-needless_continue = "warn"
-needless_for_each = "warn"
-option_option = "warn"
+needless_pass_by_ref_mut = "warn"
+needless_type_cast = "warn"
+negative_feature_names = "warn"
+non_zero_suggestions = "warn"
+nonstandard_macro_braces = "warn"
+only_used_in_recursion = "warn"
+or_fun_call = "warn"
 path_buf_push_overwrite = "warn"
-ptr_as_ptr = "warn"
-ptr_cast_constness = "warn"
+pathbuf_init_then_push = "warn"
+precedence_bits = "warn"
+print_stderr = "warn"
+print_stdout = "warn"
+pub_without_shorthand = "warn"
 rc_mutex = "warn"
-ref_option_ref = "warn"
+readonly_write_lock = "warn"
+redundant_type_annotations = "warn"
+ref_patterns = "warn"
 rest_pat_in_fully_bound_structs = "warn"
-same_functions_in_if_condition = "warn"
-semicolon_if_nothing_returned = "warn"
-single_match_else = "warn"
-string_add_assign = "warn"
+return_and_then = "warn"
+significant_drop_tightening = "warn"
+set_contains_or_insert = "warn"
+single_option_map = "warn"
+str_to_string = "warn"
 string_add = "warn"
 string_lit_as_bytes = "warn"
-string_to_string = "warn"
+string_lit_chars_any = "warn"
+suspicious_command_arg_space = "warn"
+suspicious_xor_used_as_pow = "warn"
 todo = "warn"
-#trait_duplication_in_bounds = "warn"
+too_long_first_doc_paragraph = "warn"
+too_many_arguments = "warn"
+trailing_empty_array = "warn"
+trait_duplication_in_bounds = "warn"
+tuple_array_conversions = "warn"
+undocumented_unsafe_blocks = "warn"
 unimplemented = "warn"
-unnecessary_box_returns = "warn"
-unnested_or_patterns = "warn"
-unused_self = "warn"
+uninhabited_references = "warn"
+unnecessary_safety_comment = "warn"
+unnecessary_safety_doc = "warn"
+unnecessary_self_imports = "warn"
+unnecessary_struct_initialization = "warn"
+unused_peekable = "warn"
+unused_rounding = "warn"
+unused_trait_names = "warn"
+unwrap_used = "warn"
+use_self = "warn"
+useless_let_if_seq = "warn"
 useless_transmute = "warn"
 verbose_file_reads = "warn"
-zero_sized_map_values = "warn"
-# END - Embark standard lints v5 for Rust 1.55+
+wildcard_dependencies = "warn"
 
-[lints.rust]
-# To support rust-gpu
-unexpected_cfgs = { level = "allow", check-cfg = [
-    'cfg(target_arch, values("spirv"))',
-] }
+# Pedantic lints we opt out of, mirroring https://github.com/emilk/egui/blob/main/Cargo.toml.
+# Lints that were already enabled here one-by-one are kept on.
+cast_lossless = "allow"
+cast_precision_loss = "allow"
+cast_sign_loss = "allow"
+default_trait_access = "allow"
+float_cmp = "allow"                          # exact float comparisons are usually intentional (`float_cmp_const` is still on)
+inline_always = "allow"                      # we know what we are doing
+items_after_statements = "allow"
+many_single_char_names = "allow"             # `r, g, b, a` and `h, s, v` are fine
+missing_panics_doc = "allow"
+must_use_candidate = "allow"                 # too many hits
+redundant_closure_for_method_calls = "allow"
+return_self_not_must_use = "allow"
+similar_names = "allow"                      # too many false positives, e.g. `encoder`/`encoded`
+struct_excessive_bools = "allow"
+struct_field_names = "allow"
+trivially_copy_pass_by_ref = "allow"
+unreadable_literal = "allow"
+used_underscore_binding = "allow"
+
+manual_range_contains = "allow"       # this is better on 'allow'
+map_unwrap_or = "allow"               # this is better on 'allow'

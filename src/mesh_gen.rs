@@ -35,10 +35,15 @@ impl MeshGen {
         Self::default()
     }
 
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "cube face normals are never degenerate"
+    )]
     pub fn push_cube(&mut self, half_size: Vec3, transform: IsoTransform) -> Range<usize> {
         let s = half_size;
 
-        let index_offset = self.positions.len() as u32;
+        let index_offset =
+            u32::try_from(self.positions.len()).expect("Too many vertices for u32 indices");
 
         //
         //      a +--------------+ b
@@ -135,10 +140,11 @@ impl MeshGen {
         subdivision_y: usize,
         transform: IsoTransform,
     ) -> Range<usize> {
-        let index_offset = self.positions.len() as u32;
+        let index_offset =
+            u32::try_from(self.positions.len()).expect("Too many vertices for u32 indices");
 
-        let subdivision_x = 3.max(subdivision_x as u32);
-        let subdivision_y = 3.max(subdivision_y as u32);
+        let subdivision_x = u32::try_from(subdivision_x).unwrap_or(u32::MAX).max(3);
+        let subdivision_y = u32::try_from(subdivision_y).unwrap_or(u32::MAX).max(3);
 
         let delta_x = 2.0 * std::f32::consts::PI / subdivision_x as f32;
         let delta_y = std::f32::consts::PI / subdivision_y as f32;

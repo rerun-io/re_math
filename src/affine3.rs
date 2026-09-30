@@ -3,10 +3,10 @@ use glam::Mat3;
 use glam::Quat;
 use glam::Vec3;
 
-use core::ops::*;
+use core::ops::{Add, AddAssign, Mul};
 
 use crate::IsoTransform;
-use crate::Mat3Ext;
+use crate::Mat3Ext as _;
 
 /// A type which has the same representation on the CPU and GPU for the underlying
 /// storage of an [`Affine3`].
@@ -33,6 +33,7 @@ impl Affine3Storage {
 }
 
 /// The same as [`Affine3A`] except using the non-aligned versions of the underlying types.
+///
 /// Useful when doing interop with the GPU. Note that this unfortunately has a different
 /// repr calculated on the CPU and GPU, so you still need to use [`Affine3Storage`] as a
 /// intermediary.

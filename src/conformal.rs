@@ -5,9 +5,9 @@ use glam::Vec3A;
 use crate::IsoTransform;
 use crate::Quat;
 use crate::Vec3;
-use crate::Vec3Ext;
+use crate::Vec3Ext as _;
 use crate::Vec4;
-use crate::Vec4Swizzles;
+use crate::Vec4Swizzles as _;
 
 /// Represents a transform with translation + rotation + uniform scale.
 /// Preserves local angles.
@@ -81,7 +81,7 @@ impl Conformal3 {
         Self::from_scale_rotation_translation(scale, Quat::IDENTITY, Vec3::ZERO)
     }
 
-    /// Returns the inverse of this transform. `my_transform * my_transform.inverse() = Conformal3::IDENITTY`
+    /// Returns the inverse of this transform. `my_transform * my_transform.inverse() = Conformal3::IDENTITY`
     #[inline]
     pub fn inverse(&self) -> Self {
         let inv_scale = self.inv_scale();
@@ -227,7 +227,7 @@ impl Conformal3 {
     ///
     /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
     ///
-    /// Will return [`None`] if any argument is zero, non-finite, or if forward and up are colinear.
+    /// Will return [`None`] if any argument is zero, non-finite, or if forward and up are collinear.
     #[cfg(not(target_arch = "spirv"))] // TODO: large Options in rust-gpu
     #[inline]
     pub fn look_at_rh(eye: Vec3, target: Vec3, up: Vec3) -> Option<Self> {
@@ -320,7 +320,7 @@ impl From<IsoTransform> for Conformal3 {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(not(target_arch = "spirv"))]
 impl core::fmt::Debug for Conformal3 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let (axis, angle) = self.rotation().to_axis_angle();
@@ -341,12 +341,16 @@ impl core::fmt::Debug for Conformal3 {
                     axis[2],
                 ),
             )
-            .field("scale", &format!("{}", scale))
+            .field("scale", &format!("{scale}"))
             .finish()
     }
 }
 
 #[cfg(test)]
+#[expect(
+    clippy::disallowed_methods,
+    reason = "tests normalize non-zero constants"
+)]
 mod test {
     use super::*;
 

@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 
 
+## Unreleased - 0.33.0
+`re_math` is no longer deprecated: it replaces `macaw` in Rerun, since `macaw` does not keep up with `glam` and Rerun needs features it lacks.
+
+`re_math` is now based on `macaw` 0.30.0 instead of 0.19.1, and the version continues `macaw`'s numbering.
+This reverts the API changes of `re_math` 0.20, e.g. `BoundingBox::nothing()` is a function again and `ColorRgba8` is back.
+
+* Update to `glam` 0.33
+* Update MSRV to 1.95
+* Fix `Vec4Ext::step` using the `z` component for `w`
+* Derive `bytemuck` traits for `ColorRgba8` instead of implementing them with `unsafe`
+* Implement `Debug` for `IsoTransform`, `Conformal3` and `DualQuat` without the `std` feature
+* Document feature flags on docs.rs
+
+
 ## 0.20.0 - 2024-07-11
 First release of `re_math` since forking off from `macaw`.
 

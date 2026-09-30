@@ -3,7 +3,6 @@
 #[macro_export]
 macro_rules! bench_unop {
     ($name: ident, $desc: expr, op => $unop: ident, from => $from: expr) => {
-        #[allow(clippy::undocumented_unsafe_blocks)] // just benchmarking code
         pub(crate) fn $name() {
             const SIZE: usize = 1 << 13;
             let mut rng = support::PCG32::default();
@@ -14,9 +13,7 @@ macro_rules! bench_unop {
             let mut i = 0;
             tiny_bench::bench_labeled($desc, || {
                 i = (i + 1) & (SIZE - 1);
-                unsafe {
-                    *outputs.get_unchecked_mut(i) = inputs.get_unchecked(i).$unop();
-                }
+                outputs[i] = inputs[i].$unop();
             });
             tiny_bench::black_box(outputs);
         }
@@ -26,7 +23,6 @@ macro_rules! bench_unop {
 #[macro_export]
 macro_rules! bench_binop {
     ($name: ident, $desc: expr, op => $binop: ident, from1 => $from1:expr, from2 => $from2:expr) => {
-        #[allow(clippy::undocumented_unsafe_blocks)] // just benchmarking code
         pub(crate) fn $name() {
             const SIZE: usize = 1 << 13;
             let mut rng = support::PCG32::default();
@@ -38,10 +34,8 @@ macro_rules! bench_binop {
             let mut outputs = vec![$from1(&mut rng).$binop($from2(&mut rng)); SIZE];
             let mut i = 0;
             tiny_bench::bench_labeled($desc, || {
-                    i = (i + 1) & (SIZE - 1);
-                    unsafe {
-                        *outputs.get_unchecked_mut(i) = inputs1.get_unchecked(i).$binop(*inputs2.get_unchecked(i));
-                    }
+                i = (i + 1) & (SIZE - 1);
+                outputs[i] = inputs1[i].$binop(inputs2[i]);
             });
             tiny_bench::black_box(outputs);
         }
@@ -56,7 +50,6 @@ macro_rules! bench_binop {
 #[macro_export]
 macro_rules! bench_binop_ref {
     ($name: ident, $desc: expr, op => $binop: ident, from1 => $from1:expr, from2 => $from2:expr) => {
-        #[allow(clippy::undocumented_unsafe_blocks)] // just benchmarking code
         pub(crate) fn $name() {
             const SIZE: usize = 1 << 13;
             let mut rng = support::PCG32::default();
@@ -68,10 +61,8 @@ macro_rules! bench_binop_ref {
             let mut outputs = vec![$from1(&mut rng).$binop(&$from2(&mut rng)); SIZE];
             let mut i = 0;
             tiny_bench::bench_labeled($desc, || {
-                    i = (i + 1) & (SIZE - 1);
-                    unsafe {
-                        *outputs.get_unchecked_mut(i) = inputs1.get_unchecked(i).$binop(&*inputs2.get_unchecked(i));
-                    }
+                i = (i + 1) & (SIZE - 1);
+                outputs[i] = inputs1[i].$binop(&inputs2[i]);
             });
             tiny_bench::black_box(outputs);
         }

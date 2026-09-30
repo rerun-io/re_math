@@ -3,8 +3,8 @@
 mod macros;
 mod support;
 
-use std::ops::Mul;
-use support::*;
+use std::ops::Mul as _;
+use support::{random_iso_transform, random_vec3};
 
 fn main() {
     iso_inverse();

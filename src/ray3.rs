@@ -29,8 +29,14 @@ impl Ray3 {
     }
 
     /// Get normalized ray (where `dir.len() == 1`).
+    ///
+    /// Like [`Vec3::normalize`], the direction is non-finite if it has zero length.
     #[inline]
     #[must_use]
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "intentionally mirrors `Vec3::normalize`"
+    )]
     pub fn normalize(&self) -> Self {
         Self {
             origin: self.origin,
@@ -84,26 +90,21 @@ impl Ray3 {
     }
 
     /// Returns the point where the ray intersects the plane.
-    /// Returns non-finite result of the ray and plane are parallel.
+    /// Returns a non-finite result if the ray and plane are parallel.
     pub fn intersects_plane(&self, plane: crate::Plane3) -> Vec3 {
         let (ro, rd) = (self.origin, self.dir);
-        let (pn, pd) = (plane.normal, plane.d);
+        let (n, d) = (plane.normal, plane.d);
         // p = ro + t * rd
-        // p.dot(pn) + pd = 0
-        // (ro + t * rd).dot(pn) + pd = 0
-        // ro.dot(pn) + t * rd.dot(pn) + pd = 0
-        // t * rd.dot(pn) = -(ro.dot(pn) + pd)
-        // t = -(ro.dot(pn) + pd) / rd.dot(pn)
-        let t = -(ro.dot(pn) + pd) / rd.dot(pn);
+        // p.dot(n) + d = 0
+        // (ro + t * rd).dot(n) + d = 0
+        // ro.dot(n) + t * rd.dot(n) + d = 0
+        // t = -(ro.dot(n) + d) / rd.dot(n)
+        let t = -(ro.dot(n) + d) / rd.dot(n);
         ro + t * rd
-
-        // alternate implementation:
-        //     let point = self.to_line().intersects_plane(plane);
-        //     (point.truncate() / point.w).into()
     }
 
-    // Returns the distance along the ray that is closest to the given point.
-    // The returned `t` can be negative.
+    /// Returns the distance along the ray that is closest to the given point.
+    /// The returned `t` can be negative.
     #[inline]
     pub fn closest_t_to_point(&self, point: Vec3) -> f32 {
         self.dir.dot(point - self.origin)
@@ -142,6 +143,10 @@ impl core::ops::Mul<Ray3> for crate::Conformal3 {
 impl core::ops::Mul<Ray3> for glam::Affine3A {
     type Output = Ray3;
 
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "an ergonomic `Mul` cannot be fallible; non-degenerate transforms keep the direction non-zero"
+    )]
     fn mul(self, rhs: Ray3) -> Ray3 {
         Ray3 {
             origin: self.transform_point3(rhs.origin),
@@ -153,6 +158,10 @@ impl core::ops::Mul<Ray3> for glam::Affine3A {
 impl core::ops::Mul<Ray3> for glam::Mat4 {
     type Output = Ray3;
 
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "an ergonomic `Mul` cannot be fallible; non-degenerate transforms keep the direction non-zero"
+    )]
     fn mul(self, rhs: Ray3) -> Ray3 {
         Ray3 {
             origin: self.transform_point3(rhs.origin),

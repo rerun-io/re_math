@@ -3,8 +3,8 @@
 mod macros;
 mod support;
 
-use std::ops::Mul;
-use support::*;
+use std::ops::Mul as _;
+use support::{random_conformal3, random_vec3};
 
 fn main() {
     cnf3_inverse();

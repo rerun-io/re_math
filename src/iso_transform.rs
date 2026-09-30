@@ -104,11 +104,11 @@ impl IsoTransform {
     ///
     /// For a view coordinate system with `+X=right`, `+Y=up` and `+Z=back`.
     ///
-    /// Will return [`None`] if any argument is zero, non-finite, or if forward and up are colinear.
+    /// Will return [`None`] if any argument is zero, non-finite, or if forward and up are collinear.
     #[cfg(not(target_arch = "spirv"))] // TODO: large Options in rust-gpu
     #[inline]
     pub fn look_at_rh(eye: Vec3, target: Vec3, up: Vec3) -> Option<Self> {
-        use crate::QuatExt;
+        use crate::QuatExt as _;
         let rotation = Quat::rotate_negative_z_towards(target - eye, up)?;
         Some(Self::from_quat(rotation.inverse()) * Self::from_translation(-eye))
     }
@@ -282,7 +282,7 @@ impl From<IsoTransform> for Mat4 {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(not(target_arch = "spirv"))]
 impl core::fmt::Debug for IsoTransform {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let (axis, angle) = self.rotation.to_axis_angle();
@@ -310,7 +310,10 @@ impl core::fmt::Debug for IsoTransform {
 }
 
 #[cfg(test)]
-#[allow(clippy::print_stdout, clippy::print_stderr, clippy::dbg_macro)] // ok to use in tests, benches & build scripts
+#[expect(
+    clippy::disallowed_methods,
+    reason = "tests normalize non-zero constants"
+)]
 mod test {
     use super::*;
 
@@ -398,9 +401,6 @@ mod test {
     }
 
     fn test_single_transform(t: IsoTransform) {
-        #[cfg(feature = "std")]
-        eprintln!("-------------------------------------------\nTesting {t:?}",);
-
         assert_approx_eq_transform!(t, IsoTransform::from_mat4(&t.to_mat4()).unwrap());
         assert_approx_eq_transform!(t, t.inverse().inverse());
         assert_approx_eq_transform!(t.inverse() * t, IsoTransform::IDENTITY);
@@ -432,9 +432,6 @@ mod test {
     }
 
     fn test_transform_mul(a: IsoTransform, b: IsoTransform) {
-        #[cfg(feature = "std")]
-        eprintln!("-------------------------------------------\nTesting {a:?} x {b:?}",);
-
         assert_approx_eq_transform!(
             a * b,
             IsoTransform::from_mat4(&(a.to_mat4() * b.to_mat4())).unwrap()
